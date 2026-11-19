@@ -70,6 +70,7 @@
         <label class="text-sm font-semibold">Tanggal Penilaian<input id="tanggal" type="date"></label>
         <label class="text-sm font-semibold">Kategori
           <select id="kategoriSales"><option value="">Pilih kategori</option><option>Gold</option><option>Non Gold</option></select></label>
+        <label class="text-sm font-semibold sm:col-span-2 xl:col-span-3">Link Video Roleplay (opsional)<input id="linkVideo" type="url" inputmode="url" placeholder="https://drive.google.com/file/d/… atau link YouTube" autocomplete="off"></label>
       </div>
       <div id="indikator" class="space-y-5"></div>
       <div class="card p-4 sm:p-5 mt-5">
@@ -191,7 +192,7 @@ function loadSet(name){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales'];
+const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales','linkVideo'];
 const WARNA_KAT={'Sangat Baik':'text-emerald-600','Baik':'text-blue-600','Cukup':'text-amber-600','Kurang':'text-orange-600','Belum Kompeten':'text-red-600'};
 const coachData={};
 const BM_LIST=['Arief Munandar','Johan Budi Aji','Nal Firdaus','Pupu Hadiningrat','Rendy Dwisakti Saputra','Sintaka Hari Cahyono','Topo Nurochman','Wahyu Rusnanto','Yosfana Kevin Dinasty'];
@@ -341,6 +342,8 @@ async function simpan(){
   for(const id of ['namaSales','namaRM','tanggal','kategoriSales']){
     if(!f(id)){ $(id).scrollIntoView({block:'center'}); $(id).focus(); toast('Nama sales, RM, tanggal penilaian, dan kategori wajib diisi.',false); return; }
   }
+  const lv=f('linkVideo');
+  if(lv&&!/^https?:\/\//i.test(lv)){ $('linkVideo').scrollIntoView({block:'center'}); $('linkVideo').focus(); toast('Link video harus diawali http:// atau https://',false); return; }
   const first=ITEMS.find(i=>!i.skor);
   if(first){
     ITEMS.filter(i=>!i.skor).forEach(i=>$('it'+i.no).classList.add('miss'));
@@ -349,7 +352,7 @@ async function simpan(){
   }
   const h=hitung(), [kat,rek]=kategori(h.akhir), r2=x=>Math.round(x*100)/100;
   const payload={
-    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),
+    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),linkVideo:f('linkVideo'),
     rata:Object.fromEntries(Object.entries(h.r).map(([k,v])=>[k,r2(v)])),
     nilai:Object.fromEntries(Object.entries(h.n).map(([k,v])=>[k,r2(v)])),
     nilaiAkhir:r2(h.akhir),kategori:kat,rekomendasi:rek,
@@ -408,18 +411,34 @@ function renderHasil(){
     <div class="text-3xl font-extrabold tabular-nums shrink-0 ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
     <div class="min-w-0"><div class="font-bold truncate">${esc(r['Nama Sales'])} <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 align-middle">${esc(r['Kategori Sales'])}</span></div>
     <div class="text-xs text-slate-500 truncate">RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])}</div>
-    <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span></div></div></button>`).join('')
+    <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span>${r['Link Video']?' · <span class="font-semibold text-[#1f3a5f]">▶ Video</span>':''}</div></div></button>`).join('')
     :'<p class="text-slate-500 sm:col-span-2 lg:col-span-3">Tidak ada data yang cocok.</p>';
 }
 ['fCari','fKat','fRM','fHasil'].forEach(id=>$(id).addEventListener('input',renderHasil));
 $('btnRefresh').onclick=loadRiwayat;
 $('riwayat').addEventListener('click',e=>{ const b=e.target.closest('[data-id]'); if(b) openDetail(b.dataset.id); });
 
-function closeModal(){ $('modal').classList.add('hidden'); document.body.style.overflow=''; }
+function closeModal(){ $('modal').classList.add('hidden'); $('mdBody').innerHTML=''; document.body.style.overflow=''; }
 $('mdClose').onclick=closeModal;
 $('modal').addEventListener('click',e=>{ if(e.target===$('modal')) closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
 
+function videoEmbed(u){
+  u=String(u||'').trim(); if(!/^https?:\/\//i.test(u)) return null;
+  let m;
+  if((m=u.match(/drive\.google\.com\/file\/d\/([\w-]+)/))||(m=u.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([\w-]+)/))) return {t:'f',drive:true,src:`https://drive.google.com/file/d/${m[1]}/preview`};
+  if((m=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/))([\w-]{11})/))) return {t:'f',src:`https://www.youtube.com/embed/${m[1]}`};
+  if(/\.(mp4|webm|ogg)(\?|#|$)/i.test(u)) return {t:'v',src:u};
+  return {t:'l',src:u};
+}
+function videoHtml(u){
+  const e=videoEmbed(u); if(!e) return '';
+  const player=e.t==='f'?`<div class="aspect-video rounded-xl overflow-hidden bg-black"><iframe src="${esc(e.src)}" class="w-full h-full" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`
+    :e.t==='v'?`<video src="${esc(e.src)}" controls playsinline class="w-full rounded-xl bg-black"></video>`:'';
+  return `<div class="mt-5"><h4 class="font-extrabold mb-2">Video Roleplay</h4>${player}
+    <a href="${esc(u)}" target="_blank" rel="noopener" class="inline-block mt-2 text-sm font-bold text-[#1f3a5f] underline">Buka video di tab baru ↗</a>
+    ${e.drive?'<p class="text-xs text-slate-500 mt-1">Kalau video tidak muncul, pastikan akses file Drive diatur ke “Siapa saja yang memiliki link”.</p>':''}</div>`;
+}
 async function openDetail(id){
   const r=ROWS.find(x=>x['ID']===id); if(!r) return;
   const bobot=(SETS[r['Kategori Sales']]||{}).bobot||{};
@@ -428,11 +447,13 @@ async function openDetail(id){
     <p class="text-sm text-slate-600">${esc(r['Kategori Sales'])} · ${tgl(r['Tanggal Penilaian'])}<br>RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])} · Spv: ${esc(r['Nama Spv'])}</p>
     <div class="mt-4 flex items-center gap-4"><div class="text-4xl font-extrabold tabular-nums ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
       <div><div class="font-bold">${esc(r['Kategori'])}</div><div class="text-xs text-slate-600">${esc(r['Rekomendasi'])}</div></div></div>
+    ${videoHtml(r['Link Video'])}
     <table class="w-full text-sm mt-4"><tr class="text-left text-slate-500 text-xs border-b"><th class="py-1.5 font-semibold">Aspek</th><th class="font-semibold">Rata-rata</th><th class="font-semibold text-right">Nilai</th></tr>${rekap}</table>
     <p id="mdDet" class="text-sm text-slate-500 mt-5">Memuat detail indikator…</p>`;
   $('modal').classList.remove('hidden'); document.body.style.overflow='hidden';
   try{
     const j=await (await fetch(API_URL+'?action=detail&id='+encodeURIComponent(id))).json(); if(!j.ok) throw new Error(j.error);
+    if(!$('mdDet')) return;
     let out='', last='';
     j.rows.forEach(d=>{
       if(d['Aspek']!==last){ last=d['Aspek']; out+=`<h4 class="font-extrabold mt-4 mb-1">${esc(last)}</h4>`; }
@@ -449,7 +470,7 @@ async function openDetail(id){
         ${c['Tgl Evaluasi Ulang']?`<div class="text-slate-600">Evaluasi ulang: ${tgl(c['Tgl Evaluasi Ulang'])}</div>`:''}</div>`).join('');
     }
     $('mdDet').outerHTML=out||'<p class="text-sm text-slate-500 mt-5">Detail indikator tidak ditemukan.</p>';
-  }catch(err){ $('mdDet').textContent='Gagal memuat detail: '+err.message; }
+  }catch(err){ if($('mdDet')) $('mdDet').textContent='Gagal memuat detail: '+err.message; }
 }
 function tab(t){
   const f=t==='form';
