@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Penilaian Roleplay Sales – Rumah Ningrat</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   html{scroll-behavior:smooth}
-  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#f3f5f8;color:#1b2430;-webkit-tap-highlight-color:transparent}
+  html{font-size:16px;-webkit-text-size-adjust:100%}
+  body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.6;letter-spacing:-.003em;background:#f4f6f9;color:#111827;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-tap-highlight-color:transparent}
   .card{background:#fff;border-radius:14px;box-shadow:0 1px 2px #0001}
   select{border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px;width:100%;background:#fff;font-size:16px}
   input,textarea{border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px;width:100%;background:#fff;font-size:16px}
@@ -19,6 +20,14 @@
   .skor.on-2{background:#f59e0b;border-color:#f59e0b;color:#fff}
   .skor.on-3{background:#2563eb;border-color:#2563eb;color:#fff}
   .skor.on-4{background:#059669;border-color:#059669;color:#fff}
+  .skor{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+  #tip{position:fixed;left:0;top:0;z-index:60;width:max-content;max-width:min(320px,calc(100vw - 16px));background:#0f172a;color:#f8fafc;border-radius:12px;padding:12px 14px;box-shadow:0 8px 24px #0006;font-size:14px;line-height:1.55;pointer-events:none;visibility:hidden;opacity:0;transition:opacity .12s}
+  #tip.show{visibility:visible;opacity:1}
+  #tip .tt-h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin-bottom:6px}
+  #tip .tt-h span{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:7px;color:#fff;font-size:14px}
+  #tip p{margin:0;color:#e2e8f0}
+  #tip .tt-c{margin-top:6px;color:#cbd5e1}
+  #tip .tt-c b{color:#fff;font-weight:600}
   .item{border-left:4px solid transparent;padding-left:12px;transition:border-color .15s}
   .item.d1{border-color:#dc2626}.item.d2{border-color:#f59e0b}.item.d3{border-color:#2563eb}.item.d4{border-color:#059669}
   .item.miss{background:#fff7ed;border-radius:10px}
@@ -27,6 +36,32 @@
   .chip{padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700;background:#eef2f7;color:#334155;white-space:nowrap}
   .chip.ok{background:#d1fae5;color:#065f46}
   .bottombar{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+  /* ===== Kenyamanan baca: ukuran, warna, ketebalan ===== */
+  body .text-\[11px\]{font-size:12.5px!important}
+  body .text-xs{font-size:13.5px!important;line-height:1.5!important}
+  body .text-sm{font-size:15px!important;line-height:1.6!important}
+  body .text-lg{font-size:18px!important;line-height:1.4!important}
+  body .text-xl{font-size:21px!important}
+  body .font-extrabold{font-weight:700!important}
+  body .font-bold{font-weight:600!important}
+  /* abu-abu lebih gelap supaya kontras cukup */
+  body .text-slate-400{color:#64748b!important}
+  body .text-slate-500{color:#475569!important}
+  body .text-slate-600{color:#334155!important}
+  body .text-slate-700{color:#1e293b!important}
+  body .text-blue-100{color:#dbeafe!important}
+  /* judul indikator & panduan */
+  body .item .font-bold{font-size:16.5px;line-height:1.45;color:#0f172a}
+  body .item p.text-sm{font-size:15px!important;line-height:1.65!important;color:#334155!important}
+  /* form */
+  label.text-sm{font-size:14.5px!important;color:#1e293b;font-weight:600}
+  select,input,textarea{font-family:inherit;font-size:16px;line-height:1.5;color:#111827}
+  input::placeholder,textarea::placeholder{color:#64748b;opacity:1}
+  summary{font-size:14.5px;font-weight:600;color:#1d3557}
+  .chip{font-size:14px;font-weight:600}
+  .skor{font-weight:600}
+  .skor.on-2{background:#d97706;border-color:#d97706}
+  .skor.on-3{background:#1d4ed8;border-color:#1d4ed8}
   @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 </style>
 </head>
@@ -70,7 +105,6 @@
         <label class="text-sm font-semibold">Tanggal Penilaian<input id="tanggal" type="date"></label>
         <label class="text-sm font-semibold">Kategori
           <select id="kategoriSales"><option value="">Pilih kategori</option><option>Gold</option><option>Non Gold</option></select></label>
-        <label class="text-sm font-semibold sm:col-span-2 xl:col-span-3">Link Video Roleplay (opsional)<input id="linkVideo" type="url" inputmode="url" placeholder="https://drive.google.com/file/d/… atau link YouTube" autocomplete="off"></label>
       </div>
       <div id="indikator" class="space-y-5"></div>
       <div class="card p-4 sm:p-5 mt-5">
@@ -102,7 +136,11 @@
       <button id="btnRefresh" class="px-4 py-2 rounded-lg bg-white border border-slate-300 text-sm font-semibold">Muat ulang</button>
     </div>
     <div class="card p-3 sm:p-4 mb-4 grid grid-cols-2 lg:grid-cols-5 gap-2">
-      <input id="fCari" placeholder="Cari nama sales…" class="col-span-2">
+      <div class="relative col-span-2 lg:col-span-5">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="fCari" type="search" inputmode="search" autocomplete="off" placeholder="Cari nama sales, RM, BM, Spv, atau tanggal…" style="padding-left:42px;padding-right:42px" aria-label="Cari hasil penilaian">
+        <button id="fCariClear" type="button" class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold" aria-label="Hapus pencarian">✕</button>
+      </div>
       <select id="fKat"><option value="">Semua kategori</option><option>Gold</option><option>Non Gold</option></select>
       <select id="fRM"><option value="">Semua RM</option><option>Irfannudin</option><option>Ade Himawan Mukti</option><option>Faizal Annur</option></select>
       <select id="fHasil"><option value="">Semua hasil</option><option>Sangat Baik</option><option>Baik</option><option>Cukup</option><option>Kurang</option><option>Belum Kompeten</option></select>
@@ -135,6 +173,21 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbyf0Tu-WMN6bcZ5gb6CG4cH
 // ============================================
 
 const LABEL = {1:'Belum mampu',2:'Perlu banyak arahan',3:'Baik',4:'Sangat baik'};
+const PANDUAN = {
+ 'Non Gold': {
+  1:{d:'Tidak dapat menjelaskan, informasi keliru, diam, atau tidak menjawab keberatan.',c:'Sales tidak tahu cara menjelaskan progres pembangunan dan memberi jawaban yang tidak relevan.'},
+  2:{d:'Menjelaskan sebagian, masih ragu, tidak runtut, atau perlu banyak pancingan dari evaluator.',c:'Sales menyebut fitur aplikasi tetapi tidak bisa menjelaskan manfaat atau langkah penggunaannya.'},
+  3:{d:'Penjelasan benar dan cukup runtut; mampu menjawab pertanyaan umum dengan sedikit kekurangan.',c:'Sales menjelaskan IPL dan after sales dengan cukup jelas serta mengarahkan konsumen ke saluran layanan.'},
+  4:{d:'Penjelasan akurat, lancar, relevan dengan kebutuhan, empatik, dan mampu mengarahkan ke tindak lanjut.',c:'Sales menggali kebutuhan dahulu, menghubungkan manfaat, menangani keberatan, lalu menawarkan cek lokasi.'}
+ },
+ 'Gold': {
+  1:{d:'Tidak dapat menjelaskan, memberi informasi keliru, atau tidak mampu merespons pertanyaan.',c:'Tidak bisa menjelaskan fungsi panic button atau mengarang jaminan keamanan.'},
+  2:{d:'Menjelaskan sebagian tetapi ragu, tidak runtut, atau perlu banyak pancingan.',c:'Menyebut CCTV/security tetapi tidak menjelaskan informasi yang ada dalam materi.'},
+  3:{d:'Informasi benar dan cukup runtut; mampu menjawab pertanyaan umum.',c:'Menjelaskan pemantauan progres aplikasi dan jalur pengaduan dengan cukup jelas.'},
+  4:{d:'Akurat, lancar, relevan dengan kebutuhan, empatik, dan mampu mengarahkan tindak lanjut.',c:'Menggali kekhawatiran keamanan, menjelaskan CCTV/security dan panic button, lalu memastikan pemahaman konsumen.'}
+ }
+};
+const tipOf = s => (PANDUAN[curKat]||PANDUAN['Non Gold'])[s];
 const ASPEK = {A:'A. Sebelum Membeli', B:'B. Selama Pembangunan', C:'C. Setelah Menjadi Warga', D:'D. Komunikasi & Closing'};
 const SETS = {
  'Non Gold': {bobot:{A:0.30,B:0.35,C:0.20,D:0.15}, items:[
@@ -192,7 +245,7 @@ function loadSet(name){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales','linkVideo'];
+const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales'];
 const WARNA_KAT={'Sangat Baik':'text-emerald-600','Baik':'text-blue-600','Cukup':'text-amber-600','Kurang':'text-orange-600','Belum Kompeten':'text-red-600'};
 const coachData={};
 const BM_LIST=['Arief Munandar','Johan Budi Aji','Nal Firdaus','Pupu Hadiningrat','Rendy Dwisakti Saputra','Sintaka Hari Cahyono','Topo Nurochman','Wahyu Rusnanto','Yosfana Kevin Dinasty'];
@@ -239,7 +292,7 @@ function clearDraft(){ try{localStorage.removeItem(KEY);}catch(e){} }
 /* ---------- Render ---------- */
 function renderItems(){
   if(!ITEMS.length){ $('indikator').innerHTML='<div class="card p-6 text-center text-slate-600">Pilih <b>Kategori</b> (Gold / Non Gold) di atas dulu untuk menampilkan indikator penilaian.</div>'; return; }
-  let h='';
+  let h='<p class="text-sm text-slate-600 px-1"><span class="sm:hidden">Tip: tahan tombol skor (1–4) untuk melihat panduan penilaiannya.</span><span class="hidden sm:inline">Tip: arahkan kursor ke tombol skor (1–4) untuk melihat panduan penilaiannya.</span></p>';
   Object.keys(ASPEK).forEach(k=>{
     h+=`<section id="sec-${k}" class="card p-4 sm:p-5 scroll-mt-28"><div class="flex items-baseline justify-between gap-2 mb-1"><h2 class="font-extrabold text-lg">${ASPEK[k]}</h2><span class="text-xs text-slate-500 shrink-0">bobot ${BOBOT[k]*100}%</span></div><div class="divide-y">`;
     ITEMS.filter(i=>i.k===k).forEach(i=>{
@@ -247,7 +300,7 @@ function renderItems(){
       h+=`<div class="py-4"><div class="item ${i.skor?'d'+i.skor:''}" id="it${i.no}">
       <div class="font-bold leading-snug">${i.no}. ${esc(i.indikator)}</div>
       <p class="text-sm text-slate-600 mt-1">${esc(i.panduan)}</p>
-      <div class="grid grid-cols-4 gap-2 mt-3 max-w-xl">${[1,2,3,4].map(s=>`<button type="button" class="skor${i.skor===s?' on-'+s:''}" data-no="${i.no}" data-s="${s}" aria-label="Skor ${s} ${LABEL[s]}"><span class="text-lg">${s}</span><span class="hidden sm:block text-[11px] font-medium mt-1">${LABEL[s]}</span></button>`).join('')}</div>
+      <div class="grid grid-cols-4 gap-2 mt-3 max-w-xl">${[1,2,3,4].map(s=>`<button type="button" class="skor${i.skor===s?' on-'+s:''}" data-no="${i.no}" data-s="${s}" aria-label="Skor ${s} ${LABEL[s]}. ${esc(tipOf(s).d)}"><span class="text-lg">${s}</span><span class="hidden sm:block text-[11px] font-medium mt-1">${LABEL[s]}</span></button>`).join('')}</div>
       <div class="text-xs text-slate-500 mt-1.5 sm:hidden" id="lbl${i.no}">${i.skor?i.skor+' – '+LABEL[i.skor]:'Belum dinilai'}</div>
       <details class="mt-1"><summary>+ Bukti &amp; tindak lanjut<span id="dot${i.no}">${filled}</span></summary>
         <div class="grid sm:grid-cols-2 gap-2 mt-1">
@@ -342,8 +395,6 @@ async function simpan(){
   for(const id of ['namaSales','namaRM','tanggal','kategoriSales']){
     if(!f(id)){ $(id).scrollIntoView({block:'center'}); $(id).focus(); toast('Nama sales, RM, tanggal penilaian, dan kategori wajib diisi.',false); return; }
   }
-  const lv=f('linkVideo');
-  if(lv&&!/^https?:\/\//i.test(lv)){ $('linkVideo').scrollIntoView({block:'center'}); $('linkVideo').focus(); toast('Link video harus diawali http:// atau https://',false); return; }
   const first=ITEMS.find(i=>!i.skor);
   if(first){
     ITEMS.filter(i=>!i.skor).forEach(i=>$('it'+i.no).classList.add('miss'));
@@ -352,7 +403,7 @@ async function simpan(){
   }
   const h=hitung(), [kat,rek]=kategori(h.akhir), r2=x=>Math.round(x*100)/100;
   const payload={
-    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),linkVideo:f('linkVideo'),
+    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),
     rata:Object.fromEntries(Object.entries(h.r).map(([k,v])=>[k,r2(v)])),
     nilai:Object.fromEntries(Object.entries(h.n).map(([k,v])=>[k,r2(v)])),
     nilaiAkhir:r2(h.akhir),kategori:kat,rekomendasi:rek,
@@ -403,7 +454,10 @@ async function loadRiwayat(){
 }
 function renderHasil(){
   const q=$('fCari').value.trim().toLowerCase(), fk=$('fKat').value, fr=$('fRM').value, fh=$('fHasil').value;
-  const rows=ROWS.filter(r=>(!q||String(r['Nama Sales']).toLowerCase().includes(q))&&(!fk||r['Kategori Sales']===fk)&&(!fr||r['Nama RM']===fr)&&(!fh||r['Kategori']===fh));
+  $('fCariClear').classList.toggle('hidden',!q);
+  const words=q.split(/\s+/).filter(Boolean);
+  const hay=r=>['Nama Sales','Nama RM','Nama BM','Nama Spv','Kategori Sales','Kategori','Tanggal Penilaian'].map(k=>k==='Tanggal Penilaian'?String(r[k]||'').slice(0,10):String(r[k]??'')).join(' ').toLowerCase();
+  const rows=ROWS.filter(r=>(!words.length||words.every(w=>hay(r).includes(w)))&&(!fk||r['Kategori Sales']===fk)&&(!fr||r['Nama RM']===fr)&&(!fh||r['Kategori']===fh));
   const avg=rows.length?rows.reduce((a,r)=>a+Number(r['Nilai Akhir']),0)/rows.length:0;
   $('stats').innerHTML=[['Penilaian',rows.length],['Rata-rata nilai',avg.toFixed(1)],['Nilai ≥ 80',rows.filter(r=>Number(r['Nilai Akhir'])>=80).length]]
     .map(x=>`<div class="card p-3"><div class="text-xs text-slate-500">${x[0]}</div><div class="text-2xl font-extrabold tabular-nums">${x[1]}</div></div>`).join('');
@@ -411,34 +465,19 @@ function renderHasil(){
     <div class="text-3xl font-extrabold tabular-nums shrink-0 ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
     <div class="min-w-0"><div class="font-bold truncate">${esc(r['Nama Sales'])} <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 align-middle">${esc(r['Kategori Sales'])}</span></div>
     <div class="text-xs text-slate-500 truncate">RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])}</div>
-    <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span>${r['Link Video']?' · <span class="font-semibold text-[#1f3a5f]">▶ Video</span>':''}</div></div></button>`).join('')
+    <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span></div></div></button>`).join('')
     :'<p class="text-slate-500 sm:col-span-2 lg:col-span-3">Tidak ada data yang cocok.</p>';
 }
 ['fCari','fKat','fRM','fHasil'].forEach(id=>$(id).addEventListener('input',renderHasil));
+$('fCariClear').onclick=()=>{ $('fCari').value=''; renderHasil(); $('fCari').focus(); };
 $('btnRefresh').onclick=loadRiwayat;
 $('riwayat').addEventListener('click',e=>{ const b=e.target.closest('[data-id]'); if(b) openDetail(b.dataset.id); });
 
-function closeModal(){ $('modal').classList.add('hidden'); $('mdBody').innerHTML=''; document.body.style.overflow=''; }
+function closeModal(){ $('modal').classList.add('hidden'); document.body.style.overflow=''; }
 $('mdClose').onclick=closeModal;
 $('modal').addEventListener('click',e=>{ if(e.target===$('modal')) closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
 
-function videoEmbed(u){
-  u=String(u||'').trim(); if(!/^https?:\/\//i.test(u)) return null;
-  let m;
-  if((m=u.match(/drive\.google\.com\/file\/d\/([\w-]+)/))||(m=u.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([\w-]+)/))) return {t:'f',drive:true,src:`https://drive.google.com/file/d/${m[1]}/preview`};
-  if((m=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/))([\w-]{11})/))) return {t:'f',src:`https://www.youtube.com/embed/${m[1]}`};
-  if(/\.(mp4|webm|ogg)(\?|#|$)/i.test(u)) return {t:'v',src:u};
-  return {t:'l',src:u};
-}
-function videoHtml(u){
-  const e=videoEmbed(u); if(!e) return '';
-  const player=e.t==='f'?`<div class="aspect-video rounded-xl overflow-hidden bg-black"><iframe src="${esc(e.src)}" class="w-full h-full" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`
-    :e.t==='v'?`<video src="${esc(e.src)}" controls playsinline class="w-full rounded-xl bg-black"></video>`:'';
-  return `<div class="mt-5"><h4 class="font-extrabold mb-2">Video Roleplay</h4>${player}
-    <a href="${esc(u)}" target="_blank" rel="noopener" class="inline-block mt-2 text-sm font-bold text-[#1f3a5f] underline">Buka video di tab baru ↗</a>
-    ${e.drive?'<p class="text-xs text-slate-500 mt-1">Kalau video tidak muncul, pastikan akses file Drive diatur ke “Siapa saja yang memiliki link”.</p>':''}</div>`;
-}
 async function openDetail(id){
   const r=ROWS.find(x=>x['ID']===id); if(!r) return;
   const bobot=(SETS[r['Kategori Sales']]||{}).bobot||{};
@@ -447,13 +486,11 @@ async function openDetail(id){
     <p class="text-sm text-slate-600">${esc(r['Kategori Sales'])} · ${tgl(r['Tanggal Penilaian'])}<br>RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])} · Spv: ${esc(r['Nama Spv'])}</p>
     <div class="mt-4 flex items-center gap-4"><div class="text-4xl font-extrabold tabular-nums ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
       <div><div class="font-bold">${esc(r['Kategori'])}</div><div class="text-xs text-slate-600">${esc(r['Rekomendasi'])}</div></div></div>
-    ${videoHtml(r['Link Video'])}
     <table class="w-full text-sm mt-4"><tr class="text-left text-slate-500 text-xs border-b"><th class="py-1.5 font-semibold">Aspek</th><th class="font-semibold">Rata-rata</th><th class="font-semibold text-right">Nilai</th></tr>${rekap}</table>
     <p id="mdDet" class="text-sm text-slate-500 mt-5">Memuat detail indikator…</p>`;
   $('modal').classList.remove('hidden'); document.body.style.overflow='hidden';
   try{
     const j=await (await fetch(API_URL+'?action=detail&id='+encodeURIComponent(id))).json(); if(!j.ok) throw new Error(j.error);
-    if(!$('mdDet')) return;
     let out='', last='';
     j.rows.forEach(d=>{
       if(d['Aspek']!==last){ last=d['Aspek']; out+=`<h4 class="font-extrabold mt-4 mb-1">${esc(last)}</h4>`; }
@@ -470,7 +507,7 @@ async function openDetail(id){
         ${c['Tgl Evaluasi Ulang']?`<div class="text-slate-600">Evaluasi ulang: ${tgl(c['Tgl Evaluasi Ulang'])}</div>`:''}</div>`).join('');
     }
     $('mdDet').outerHTML=out||'<p class="text-sm text-slate-500 mt-5">Detail indikator tidak ditemukan.</p>';
-  }catch(err){ if($('mdDet')) $('mdDet').textContent='Gagal memuat detail: '+err.message; }
+  }catch(err){ $('mdDet').textContent='Gagal memuat detail: '+err.message; }
 }
 function tab(t){
   const f=t==='form';
@@ -481,6 +518,41 @@ function tab(t){
   if(!f) loadRiwayat();
 }
 $('tabForm').onclick=()=>tab('form'); $('tabRiwayat').onclick=()=>tab('riwayat');
+
+/* ---------- Tooltip panduan skor ---------- */
+const tipEl=document.createElement('div'); tipEl.id='tip'; tipEl.setAttribute('role','tooltip'); document.body.appendChild(tipEl);
+const TIPCOL={1:'#dc2626',2:'#d97706',3:'#1d4ed8',4:'#059669'};
+let tipTimer=null, pressTimer=null, noClick=false;
+const skorOf=e=>e.target.closest?e.target.closest('.skor'):null;
+function showTip(btn){
+  const s=+btn.dataset.s, t=tipOf(s); if(!t) return;
+  clearTimeout(tipTimer);
+  tipEl.innerHTML=`<div class="tt-h"><span style="background:${TIPCOL[s]}">${s}</span>${esc(LABEL[s])}</div><p>${esc(t.d)}</p><p class="tt-c"><b>Contoh:</b> ${esc(t.c)}</p>`;
+  tipEl.style.left='0px'; tipEl.style.top='0px'; tipEl.classList.add('show');
+  const r=btn.getBoundingClientRect(), w=tipEl.offsetWidth, h=tipEl.offsetHeight, m=8;
+  const x=Math.max(m,Math.min(r.left+r.width/2-w/2,innerWidth-w-m));
+  let y=r.top-h-m; if(y<m) y=r.bottom+m;
+  tipEl.style.left=x+'px'; tipEl.style.top=y+'px';
+}
+function hideTip(){ clearTimeout(tipTimer); tipEl.classList.remove('show'); }
+document.addEventListener('mouseover',e=>{ if(!matchMedia('(hover:hover)').matches) return; const b=skorOf(e); if(b) showTip(b); });
+document.addEventListener('mouseout',e=>{ const b=skorOf(e); if(b&&!b.contains(e.relatedTarget)) hideTip(); });
+document.addEventListener('focusin',e=>{ const b=skorOf(e); if(b&&b.matches(':focus-visible')) showTip(b); });
+document.addEventListener('focusout',e=>{ if(skorOf(e)) hideTip(); });
+/* HP: tahan tombol untuk melihat panduan tanpa memilih skor */
+document.addEventListener('touchstart',e=>{
+  clearTimeout(pressTimer); const b=skorOf(e);
+  if(!b){ hideTip(); return; }
+  pressTimer=setTimeout(()=>{ noClick=true; showTip(b); },400);
+},{passive:true});
+document.addEventListener('touchmove',()=>clearTimeout(pressTimer),{passive:true});
+['touchend','touchcancel'].forEach(ev=>document.addEventListener(ev,()=>{
+  clearTimeout(pressTimer);
+  if(noClick){ tipTimer=setTimeout(hideTip,3500); setTimeout(()=>{noClick=false;},600); }
+},{passive:true}));
+document.addEventListener('click',e=>{ if(noClick){ noClick=false; e.stopImmediatePropagation(); e.preventDefault(); } },true);
+document.addEventListener('contextmenu',e=>{ if(skorOf(e)) e.preventDefault(); });
+window.addEventListener('scroll',hideTip,{passive:true});
 
 /* ---------- Init ---------- */
 $('tanggal').value=new Date().toISOString().slice(0,10);
