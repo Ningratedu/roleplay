@@ -517,10 +517,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
 async function openDetail(id){
   const r=ROWS.find(x=>x['ID']===id); if(!r) return;
   const bobot=(SETS[r['Kategori Sales']]||{}).bobot||{};
+  const lv=Object.keys(r).filter(k=>/video/i.test(k)).map(k=>String(r[k]||'').trim()).find(v=>/^https?:\/\/\S+$/i.test(v))||'';
   const rekap=Object.keys(ASPEK).filter(k=>bobot[k]).map(k=>`<tr class="border-b last:border-0"><td class="py-2">${ASPEK[k]} <span class="text-xs text-slate-400">${Math.round(bobot[k]*100)}%</span></td><td class="tabular-nums">${Number(r['Rata '+k]).toFixed(2)}</td><td class="text-right font-bold tabular-nums">${Number(r['Nilai '+k]).toFixed(1)}</td></tr>`).join('');
   $('mdBody').innerHTML=`<h3 class="text-lg font-extrabold pr-10">${esc(r['Nama Sales'])}</h3>
     <p class="text-sm text-slate-600">${esc(r['Kategori Sales'])} · ${tgl(r['Tanggal Penilaian'])}<br>RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])} · Spv: ${esc(r['Nama Spv'])}</p>
-    ${/^https?:\/\//i.test(r['Link Video']||'')?`<p class="text-sm mt-2"><a href="${esc(r['Link Video'])}" target="_blank" rel="noopener noreferrer" class="font-semibold text-blue-700 underline break-all">▶ Buka video roleplay</a></p>`:''}
+    ${lv?`<p class="text-sm mt-2"><a href="${esc(lv)}" target="_blank" rel="noopener noreferrer" class="font-semibold text-blue-700 underline break-all">▶ Buka video roleplay</a></p>`:''}
     <div class="mt-4 flex items-center gap-4"><div class="text-4xl font-extrabold tabular-nums ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
       <div><div class="font-bold">${esc(r['Kategori'])}</div><div class="text-xs text-slate-600">${esc(r['Rekomendasi'])}</div></div></div>
     <table class="w-full text-sm mt-4"><tr class="text-left text-slate-500 text-xs border-b"><th class="py-1.5 font-semibold">Aspek</th><th class="font-semibold">Rata-rata</th><th class="font-semibold text-right">Nilai</th></tr>${rekap}</table>
