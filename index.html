@@ -160,7 +160,7 @@
 </div>
 
 <div id="modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center">
-  <div class="bg-white w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 relative">
+  <div class="bg-white w-full sm:max-w-4xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 relative">
     <button id="mdClose" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-100 font-bold" aria-label="Tutup">✕</button>
     <div id="mdBody"></div>
   </div>
@@ -531,14 +531,23 @@ async function openDetail(id){
   try{
     const j=await (await fetch(API_URL+'?action=detail&id='+encodeURIComponent(id))).json(); if(!j.ok) throw new Error(j.error);
     if(!$('mdDet')) return;
-    let out='', last='';
+    let out='', last='', open=false;
+    const ids=RB_MAP[r['Kategori Sales']]||[];
     j.rows.forEach(d=>{
-      if(d['Aspek']!==last){ last=d['Aspek']; out+=`<h4 class="font-extrabold mt-4 mb-1">${esc(last)}</h4>`; }
-      out+=`<div class="py-2 border-b last:border-0 flex gap-3"><span class="shrink-0 w-7 h-7 rounded-lg text-white text-sm font-bold flex items-center justify-center ${SKOR_BG[d['Skor']]||'bg-slate-400'}">${esc(d['Skor'])}</span>
-        <div class="min-w-0 text-sm"><div class="font-semibold">${esc(d['No'])}. ${esc(d['Indikator'])}</div>
-        ${d['Bukti/Catatan']?`<div class="text-slate-600">Bukti: ${esc(d['Bukti/Catatan'])}</div>`:''}
-        ${d['Tindak Lanjut']?`<div class="text-slate-600">Tindak lanjut: ${esc(d['Tindak Lanjut'])}</div>`:''}</div></div>`;
+      if(d['Aspek']!==last){
+        if(open) out+='</tbody></table></div>';
+        last=d['Aspek']; open=true;
+        out+=`<h4 class="font-extrabold mt-4 mb-1">${esc(last)}</h4><div class="overflow-x-auto"><table class="w-full text-[12.5px] leading-snug min-w-[540px]"><thead><tr class="text-left text-slate-500 border-b"><th class="py-1.5 pr-2 w-7 font-semibold">No</th><th class="pr-3 w-[34%] font-semibold">Indikator</th><th class="pr-2 w-10 text-center font-semibold">Skor</th><th class="font-semibold">Keterangan (sesuai rubrik)</th></tr></thead><tbody>`;
+      }
+      const sk=Number(d['Skor']), rb=RB[ids[Number(d['No'])-1]], ket=(rb&&rb[sk-1])||'';
+      out+=`<tr class="border-b last:border-0 align-top"><td class="py-2 pr-2 tabular-nums text-slate-500">${esc(d['No'])}</td>
+        <td class="py-2 pr-3"><div class="font-semibold">${esc(d['Indikator'])}</div>
+          ${d['Bukti/Catatan']?`<div class="text-slate-600 mt-0.5">Bukti: ${esc(d['Bukti/Catatan'])}</div>`:''}
+          ${d['Tindak Lanjut']?`<div class="text-slate-600 mt-0.5">Tindak lanjut: ${esc(d['Tindak Lanjut'])}</div>`:''}</td>
+        <td class="py-2 pr-2 text-center"><span class="inline-flex w-6 h-6 rounded-md text-white text-xs font-bold items-center justify-center ${SKOR_BG[d['Skor']]||'bg-slate-400'}">${esc(d['Skor'])}</span></td>
+        <td class="py-2 text-slate-700"><span class="font-semibold">${esc(LABEL[sk]||'')}</span>${ket?' – '+esc(ket):''}</td></tr>`;
     });
+    if(open) out+='</tbody></table></div>';
     if((j.coaching||[]).length){
       out+='<h4 class="font-extrabold mt-5 mb-1">Rencana Coaching</h4>'+j.coaching.map(c=>`<div class="border rounded-xl p-3 mb-2 text-sm"><div class="font-semibold">${esc(c['Indikator'])}</div>
         ${c['Temuan']?`<div class="text-slate-600">Temuan: ${esc(c['Temuan'])}</div>`:''}
