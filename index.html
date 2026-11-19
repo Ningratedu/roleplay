@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Penilaian Roleplay Sales – Rumah Ningrat</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  html{scroll-behavior:smooth}
+  body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#f3f5f8;color:#1b2430;-webkit-tap-highlight-color:transparent}
+  .card{background:#fff;border-radius:14px;box-shadow:0 1px 2px #0001}
+  select{border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px;width:100%;background:#fff;font-size:16px}
+  input,textarea{border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px;width:100%;background:#fff;font-size:16px}
+  input:focus,textarea:focus,select:focus,button:focus-visible,summary:focus-visible{outline:2px solid #1f3a5f66;outline-offset:1px;border-color:#1f3a5f}
+  .skor{border:1.5px solid #cbd5e1;border-radius:12px;min-height:54px;font-weight:700;background:#fff;cursor:pointer;transition:background .12s,border-color .12s;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+  .skor:hover{border-color:#1f3a5f}
+  .skor.on-1{background:#dc2626;border-color:#dc2626;color:#fff}
+  .skor.on-2{background:#f59e0b;border-color:#f59e0b;color:#fff}
+  .skor.on-3{background:#2563eb;border-color:#2563eb;color:#fff}
+  .skor.on-4{background:#059669;border-color:#059669;color:#fff}
+  .item{border-left:4px solid transparent;padding-left:12px;transition:border-color .15s}
+  .item.d1{border-color:#dc2626}.item.d2{border-color:#f59e0b}.item.d3{border-color:#2563eb}.item.d4{border-color:#059669}
+  .item.miss{background:#fff7ed;border-radius:10px}
+  summary{cursor:pointer;list-style:none;font-size:13px;font-weight:600;color:#1f3a5f;padding:6px 0}
+  summary::-webkit-details-marker{display:none}
+  .chip{padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700;background:#eef2f7;color:#334155;white-space:nowrap}
+  .chip.ok{background:#d1fae5;color:#065f46}
+  .bottombar{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="bg-[#1f3a5f] text-white">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <div class="min-w-0">
+      <h1 class="text-lg sm:text-xl font-extrabold leading-tight">Penilaian Roleplay Sales</h1>
+      <p class="text-xs sm:text-sm text-blue-100 truncate">Rumah Ningrat · Kenapa Memilih Rumah Ningrat?</p>
+    </div>
+    <nav class="flex gap-1.5 text-sm font-semibold shrink-0">
+      <button id="tabForm" class="px-3 sm:px-4 py-2 rounded-lg bg-white text-[#1f3a5f]">Form</button>
+      <button id="tabRiwayat" class="px-3 sm:px-4 py-2 rounded-lg bg-white/15">Hasil</button>
+    </nav>
+  </div>
+</header>
+
+<div id="navBar" class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b">
+  <div class="max-w-6xl mx-auto px-4 pt-2 pb-2">
+    <div class="flex gap-2 overflow-x-auto" id="chips"></div>
+    <div class="mt-2 h-1.5 rounded bg-slate-200 overflow-hidden"><div id="bar" class="h-full bg-emerald-500" style="width:0%"></div></div>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-5 pb-32 lg:pb-8">
+  <div id="warn" class="hidden mb-4 p-3 rounded-lg bg-amber-100 text-amber-900 text-sm">URL Apps Script belum diisi. Isi konstanta <b>API_URL</b> supaya hasil tersimpan ke spreadsheet.</div>
+  <div id="draftInfo" class="hidden mb-4 p-3 rounded-lg bg-blue-50 text-blue-900 text-sm flex items-center justify-between gap-3">
+    <span>Draft penilaian sebelumnya dipulihkan.</span>
+    <button class="font-bold underline shrink-0" onclick="resetAll()">Mulai baru</button>
+  </div>
+
+  <section id="viewForm">
+   <div class="lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 items-start">
+    <div class="min-w-0">
+      <div class="card p-4 sm:p-5 mb-5 grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        <label class="text-sm font-semibold">Nama Sales<input id="namaSales" autocomplete="off"></label>
+        <label class="text-sm font-semibold">Nama RM
+          <select id="namaRM"><option value="">Pilih RM</option><option>Irfannudin</option><option>Ade Himawan Mukti</option><option>Faizal Annur</option></select></label>
+        <label class="text-sm font-semibold">Nama BM<select id="namaBM"></select><input id="namaBMTxt" class="hidden mt-2" placeholder="Ketik nama BM" autocomplete="off"></label>
+        <label class="text-sm font-semibold">Nama Spv<select id="namaSpv"></select><input id="namaSpvTxt" class="hidden mt-2" placeholder="Ketik nama Spv" autocomplete="off"></label>
+        <label class="text-sm font-semibold">Tanggal Penilaian<input id="tanggal" type="date"></label>
+        <label class="text-sm font-semibold">Kategori
+          <select id="kategoriSales"><option value="">Pilih kategori</option><option>Gold</option><option>Non Gold</option></select></label>
+      </div>
+      <div id="indikator" class="space-y-5"></div>
+      <div class="card p-4 sm:p-5 mt-5">
+        <h2 class="font-extrabold text-lg">Rencana Coaching</h2>
+        <p class="text-sm text-slate-600 mb-3">Indikator dengan skor 1 atau 2 muncul otomatis di sini.</p>
+        <div id="coaching" class="space-y-4 text-sm"></div>
+      </div>
+    </div>
+
+    <aside class="mt-5 lg:mt-0 lg:sticky lg:top-24">
+      <div class="card p-4 sm:p-5">
+        <h2 class="font-extrabold text-lg mb-2">Rekap Nilai</h2>
+        <table class="w-full text-sm" id="rekap"></table>
+        <div class="mt-4 pt-4 border-t flex items-center gap-4">
+          <div class="text-4xl font-extrabold tabular-nums" id="nilaiAkhir">0</div>
+          <div class="min-w-0"><div class="font-bold" id="kategori"></div><div class="text-xs text-slate-600" id="rekom"></div></div>
+        </div>
+        <button id="btnSimpan" class="hidden lg:block w-full mt-4 px-5 py-3 rounded-xl bg-[#1f3a5f] text-white font-bold hover:opacity-90 disabled:opacity-50">Simpan ke Spreadsheet</button>
+        <button id="btnReset" class="w-full mt-2 px-5 py-2.5 rounded-xl bg-white border border-slate-300 font-semibold text-sm">Kosongkan form</button>
+        <p id="status" class="text-sm mt-3"></p>
+      </div>
+    </aside>
+   </div>
+  </section>
+
+  <section id="viewRiwayat" class="hidden">
+    <div class="flex items-center justify-between gap-2 mb-3">
+      <h2 class="font-extrabold text-lg">Hasil Penilaian</h2>
+      <button id="btnRefresh" class="px-4 py-2 rounded-lg bg-white border border-slate-300 text-sm font-semibold">Muat ulang</button>
+    </div>
+    <div class="card p-3 sm:p-4 mb-4 grid grid-cols-2 lg:grid-cols-5 gap-2">
+      <input id="fCari" placeholder="Cari nama sales…" class="col-span-2">
+      <select id="fKat"><option value="">Semua kategori</option><option>Gold</option><option>Non Gold</option></select>
+      <select id="fRM"><option value="">Semua RM</option><option>Irfannudin</option><option>Ade Himawan Mukti</option><option>Faizal Annur</option></select>
+      <select id="fHasil"><option value="">Semua hasil</option><option>Sangat Baik</option><option>Baik</option><option>Cukup</option><option>Kurang</option><option>Belum Kompeten</option></select>
+    </div>
+    <div id="stats" class="grid grid-cols-3 gap-2 mb-4"></div>
+    <div id="riwayat" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+  </section>
+</main>
+
+<div id="bottomBar" class="bottombar lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t px-4 pt-2.5 flex items-center gap-3">
+  <div class="min-w-0 flex-1">
+    <div class="text-xs text-slate-500"><span id="mProg">0/21</span> dinilai</div>
+    <div class="font-extrabold text-lg leading-tight tabular-nums">Nilai: <span id="mNilai">0</span></div>
+  </div>
+  <button id="btnSimpanM" class="px-5 py-3 rounded-xl bg-[#1f3a5f] text-white font-bold disabled:opacity-50">Simpan</button>
+</div>
+
+<div id="modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center">
+  <div class="bg-white w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 relative">
+    <button id="mdClose" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-100 font-bold" aria-label="Tutup">✕</button>
+    <div id="mdBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="hidden fixed z-40 left-1/2 -translate-x-1/2 bottom-24 lg:bottom-6 w-[92%] max-w-md rounded-xl px-4 py-3 text-sm font-semibold shadow-lg"></div>
+
+<script>
+// ====== ISI SETELAH DEPLOY APPS SCRIPT ======
+const API_URL = 'https://script.google.com/macros/s/AKfycbyf0Tu-WMN6bcZ5gb6CG4cHGBiDfmLdhJOibc1uLEyUT0WUWtR97IpCXiM6GR0zbLRVIg/exec';
+// ============================================
+
+const LABEL = {1:'Belum mampu',2:'Perlu banyak arahan',3:'Baik',4:'Sangat baik'};
+const ASPEK = {A:'A. Sebelum Membeli', B:'B. Selama Pembangunan', C:'C. Setelah Menjadi Warga', D:'D. Komunikasi & Closing'};
+const SETS = {
+ 'Non Gold': {bobot:{A:0.30,B:0.35,C:0.20,D:0.15}, items:[
+['A','Menjelaskan 30 titik lokasi Rumah Ningrat','Menyampaikan informasi 30 titik lokasi secara jelas; tidak sekadar menyebut angka, tetapi mengaitkannya dengan pilihan lokasi konsumen.'],
+['A','Menjelaskan kredibilitas dan rekam jejak developer','Menjelaskan identitas/kredibilitas developer sesuai materi dan memberi alasan yang relevan untuk membangun kepercayaan.'],
+['A','Menjelaskan 3X penghargaan berturut-turut','Menyebutkan penghargaan sebagai bukti pendukung kredibilitas; tidak mengarang nama, kategori, atau tahun penghargaan.'],
+['A','Menjelaskan program GRATIS PAGAR','Menjelaskan manfaat program gratis pagar dan ketentuan yang berlaku; tidak menjanjikan hal di luar program.'],
+['A','Menggali kesesuaian rumah dengan kebutuhan konsumen','Menggali kebutuhan unit, akses, lingkungan, listrik, air, dan rincian biaya sebelum merekomendasikan rumah.'],
+['A','Menghubungkan keunggulan dengan kebutuhan konsumen','Mengubah fitur menjadi manfaat yang relevan dengan kondisi/keberatan konsumen, bukan hanya membaca materi.'],
+['B','Menjelaskan cek progres pembangunan melalui aplikasi','Menjelaskan bahwa progres pembangunan dapat dipantau melalui aplikasi dan menyampaikan informasi sesuai fitur yang tersedia.'],
+['B','Mendemonstrasikan / menjelaskan cara cek progres','Mengarahkan konsumen pada fitur progres secara runtut; mampu menjelaskan langkah penggunaan tanpa membingungkan.'],
+['B','Menjelaskan pengaduan dan penilaian pelayanan','Menjelaskan fungsi pengaduan dan penilaian pelayanan sebagai saluran menyampaikan keluhan/masukan.'],
+['B','Menjelaskan mekanisme penyampaian keluhan','Menjelaskan cara menyampaikan keluhan melalui aplikasi dan informasi yang perlu disiapkan konsumen.'],
+['B','Menjelaskan voucher keterlambatan pembangunan','Menjelaskan voucher sesuai materi dan ketentuan program; tidak menyatakan otomatis berlaku tanpa memeriksa syarat.'],
+['B','Merespons kekhawatiran keterlambatan pembangunan','Mendengarkan kekhawatiran, memberi jawaban tenang, tidak defensif, dan menjelaskan saluran pemantauan/eskalasi.'],
+['C','Menjelaskan pengelolaan lingkungan bersama','Menjelaskan bahwa pengelolaan lingkungan dilakukan bersama dan memberi gambaran peran layanan pengelolaan.'],
+['C','Menjelaskan layanan lingkungan dan pembayaran IPL','Menjelaskan layanan pengelolaan lingkungan serta pembayaran IPL secara jelas; tidak mengarang nominal atau cakupan.'],
+['C','Menjelaskan layanan after sales','Menjelaskan jalur layanan setelah konsumen menempati rumah dan bagaimana konsumen mengakses bantuan.'],
+['C','Menjelaskan pengaduan kerusakan / kendala','Menjelaskan proses menyampaikan pengaduan dan menegaskan bahwa penanganan mengikuti cakupan layanan serta ketentuan yang berlaku.'],
+['D','Membuka percakapan dengan ramah','Menyapa, memperkenalkan diri, membangun kenyamanan, dan menjaga sikap profesional.'],
+['D','Menggali kebutuhan dan kekhawatiran konsumen','Mengajukan pertanyaan terbuka, mendengarkan aktif, dan mengonfirmasi kebutuhan sebelum menawarkan.'],
+['D','Menjelaskan manfaat dengan bahasa sederhana','Menggunakan bahasa mudah dipahami, alur runtut, dan tidak hanya menghafal atau membaca materi.'],
+['D','Menangani pertanyaan dan keberatan konsumen','Tidak memotong pembicaraan; menjawab sesuai informasi, mengakui bila perlu konfirmasi, dan tidak membuat janji berlebihan.'],
+['D','Mengarahkan ke tindak lanjut / closing','Menawarkan langkah konkret seperti cek lokasi, konsultasi unit, atau tindak lanjut sesuai kesiapan konsumen.']
+]},
+ 'Gold': {bobot:{A:0.25,B:0.30,C:0.30,D:0.15}, items:[
+['A','Menjelaskan 30 titik lokasi Rumah Ningrat','Menyampaikan informasi 30 titik lokasi sesuai materi; mengaitkannya dengan pilihan lokasi dan kebutuhan konsumen tanpa melebih-lebihkan.'],
+['A','Menjelaskan kredibilitas dan rekam jejak developer','Menjelaskan kredibilitas developer dengan bahasa sederhana dan menggunakan informasi yang tersedia sebagai dasar membangun kepercayaan.'],
+['A','Menjelaskan 3X penghargaan berturut-turut','Menyampaikan penghargaan sebagai bukti pendukung kredibilitas; tidak mengarang nama, kategori, atau tahun penghargaan.'],
+['A','Menjelaskan program GRATIS PAGAR','Menjelaskan manfaat program gratis pagar dan menegaskan bahwa pelaksanaannya mengikuti ketentuan program.'],
+['A','Menjelaskan rumah sesuai kebutuhan konsumen','Menggali dan menjelaskan kesesuaian unit, akses, lingkungan, listrik, air, serta rincian biaya; mencocokkan dengan prioritas keluarga.'],
+['B','Menjelaskan fitur cek berkas pemenuhan KPR','Menjelaskan bahwa progres pemenuhan berkas KPR dapat dipantau melalui aplikasi; menyampaikan informasi sesuai fitur yang tersedia.'],
+['B','Menjelaskan fitur pantau progres pembangunan lewat aplikasi','Menjelaskan fungsi pemantauan progres pembangunan dan manfaat akses informasi bagi konsumen; mampu mengarahkan konsumen ke fitur terkait.'],
+['B','Mendemonstrasikan cara mengakses progres di aplikasi','Menjelaskan urutan penggunaan fitur dengan runtut dan bahasa sederhana; tidak sekadar menyebut nama aplikasi.'],
+['B','Menjelaskan pengaduan dan penilaian pelayanan','Menjelaskan fungsi menu pengaduan dan penilaian tim/pelayanan sebagai sarana menyampaikan keluhan dan masukan.'],
+['B','Menjelaskan voucher pembangunan terlambat','Menjelaskan adanya voucher terkait keterlambatan pembangunan sesuai syarat dan ketentuan program; tidak menjanjikan otomatis tanpa verifikasi.'],
+['C','Menjelaskan CCTV dan security 24 jam','Menjelaskan informasi CCTV dan penjagaan/security 24 jam sebagaimana tercantum dalam materi; menghubungkannya dengan rasa aman warga tanpa menjamin tidak ada risiko.'],
+['C','Menjelaskan fitur Panic Button','Menjelaskan fungsi tombol bantuan/panic button dan bagaimana warga dapat menggunakannya atau menghubungi petugas sesuai mekanisme yang berlaku.'],
+['C','Menjelaskan pengelolaan lingkungan bersama','Menjelaskan pengelolaan lingkungan perumahan dan peran layanan pengelolaan serta pembayaran IPL sesuai cakupan yang berlaku.'],
+['C','Menjelaskan layanan after sales','Menjelaskan saluran layanan setelah rumah ditempati, proses menyampaikan kendala, dan bahwa penanganan mengikuti cakupan layanan serta ketentuan.'],
+['D','Membuka percakapan dengan ramah dan profesional','Menyapa, memperkenalkan diri, menjaga kontak/interaksi yang nyaman, dan membangun kepercayaan sejak awal.'],
+['D','Menggali kebutuhan dan kekhawatiran konsumen','Mengajukan pertanyaan terbuka, mendengarkan aktif, dan mengonfirmasi kebutuhan sebelum menawarkan keunggulan.'],
+['D','Menjelaskan manfaat, bukan sekadar fitur','Menghubungkan fitur Gold dengan manfaat nyata bagi konsumen; menggunakan bahasa sederhana dan tidak hanya menghafal materi.'],
+['D','Menangani pertanyaan dan keberatan konsumen','Tidak memotong pembicaraan; menjawab sesuai materi, bersikap tenang, dan menyatakan akan mengonfirmasi bila belum mengetahui jawabannya.'],
+['D','Mengarahkan ke tindak lanjut / closing','Merangkum manfaat yang relevan dan menawarkan langkah konkret seperti cek lokasi, konsultasi unit, atau tindak lanjut.']
+ ]}
+};
+let ITEMS=[], BOBOT={A:0,B:0,C:0,D:0}, curKat='';
+function loadSet(name){
+  curKat=name; const s=SETS[name];
+  if(!s){ ITEMS=[]; BOBOT={A:0,B:0,C:0,D:0}; return; }
+  BOBOT=s.bobot;
+  ITEMS=s.items.map((x,i)=>({no:i+1,k:x[0],indikator:x[1],panduan:x[2],skor:0,catatan:'',tindak:''}));
+}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales'];
+const WARNA_KAT={'Sangat Baik':'text-emerald-600','Baik':'text-blue-600','Cukup':'text-amber-600','Kurang':'text-orange-600','Belum Kompeten':'text-red-600'};
+const coachData={};
+const BM_LIST=['Arief Munandar','Johan Budi Aji','Nal Firdaus','Pupu Hadiningrat','Rendy Dwisakti Saputra','Sintaka Hari Cahyono','Topo Nurochman','Wahyu Rusnanto','Yosfana Kevin Dinasty'];
+const SPV_LIST=['Al Karim','Andi Mulya Prasetia','Andre Permana','Anori','Anri Suherli','Azfar Azlam Abubakar','Bambang Teja Sukmanto','Diki Firmansyah','Eko Budiono','Fajar Destra Anugrah','Firda Nisrina Aulia','Indra Susanto','Iqbal Rabani','Kiki Armiliya Agustina','M Ari Darmawan','Maryadih','Maulana Sidiq','Muhamad Saeful Haq','Muhammad Galih Aditio','Muhammad Riza Dhiaul Haq','Prayoga Yudistira','Qisthan Wilyan Ardli','Raka Firdaus Fathurohman','Riswanto','Robby Ilham','Saefudin Bahtiar','Samsul Anam','Sony Suhansa','Wiwik'];
+function fillMan(){
+  [['namaBM',BM_LIST,'BM'],['namaSpv',SPV_LIST,'Spv']].forEach(([id,list,lbl])=>{
+    $(id).innerHTML=`<option value="">Pilih ${lbl}</option>`+list.map(n=>`<option>${esc(n)}</option>`).join('')+'<option value="__manual">Lainnya (ketik manual)</option>';
+    $(id).addEventListener('change',()=>{ syncMan(); if($(id).value==='__manual') $(id+'Txt').focus(); });
+  });
+}
+function syncMan(){ ['namaBM','namaSpv'].forEach(id=>$(id+'Txt').classList.toggle('hidden',$(id).value!=='__manual')); }
+const gv=id=>$(id).value==='__manual'?$(id+'Txt').value.trim():$(id).value;
+
+
+function kategori(n){
+  const g=curKat==='Gold';
+  if(n>=90) return ['Sangat Baik',g?'Siap praktik lapangan; tetap mengikuti ketentuan dan informasi resmi program.':'Siap praktik lapangan; tetap mengikuti standar dan ketentuan program.'];
+  if(n>=80) return ['Baik',g?'Siap praktik dengan coaching ringan.':'Siap praktik dengan sedikit evaluasi dan coaching ringan.'];
+  if(n>=70) return ['Cukup',g?'Perlu penguatan indikator dengan skor rendah.':'Perlu penguatan pada indikator dengan skor rendah.'];
+  if(n>=60) return ['Kurang','Perlu latihan terarah dan roleplay ulang.'];
+  return ['Belum Kompeten','Perlu pendampingan intensif sebelum praktik mandiri.'];
+}
+
+/* ---------- Draft otomatis ---------- */
+let t0;
+function persist(){
+  clearTimeout(t0);
+  t0=setTimeout(()=>{ try{
+    localStorage.setItem(KEY,JSON.stringify({f:Object.fromEntries(IDS.map(i=>[i,$(i).value])),it:ITEMS.map(i=>[i.skor,i.catatan,i.tindak]),c:coachData}));
+  }catch(e){} },400);
+}
+function restore(){
+  try{
+    const d=JSON.parse(localStorage.getItem(KEY)||'null'); if(!d) return false;
+    IDS.forEach(i=>{ if(d.f&&d.f[i]) $(i).value=d.f[i]; });
+    syncMan(); loadSet($('kategoriSales').value);
+    if((d.it||[]).length===ITEMS.length) d.it.forEach((x,i)=>{ if(ITEMS[i]){ITEMS[i].skor=x[0]||0;ITEMS[i].catatan=x[1]||'';ITEMS[i].tindak=x[2]||'';} });
+    Object.assign(coachData,d.c||{});
+    return ITEMS.some(i=>i.skor||i.catatan||i.tindak)||!!(d.f&&d.f.namaSales);
+  }catch(e){ return false; }
+}
+function clearDraft(){ try{localStorage.removeItem(KEY);}catch(e){} }
+
+/* ---------- Render ---------- */
+function renderItems(){
+  if(!ITEMS.length){ $('indikator').innerHTML='<div class="card p-6 text-center text-slate-600">Pilih <b>Kategori</b> (Gold / Non Gold) di atas dulu untuk menampilkan indikator penilaian.</div>'; return; }
+  let h='';
+  Object.keys(ASPEK).forEach(k=>{
+    h+=`<section id="sec-${k}" class="card p-4 sm:p-5 scroll-mt-28"><div class="flex items-baseline justify-between gap-2 mb-1"><h2 class="font-extrabold text-lg">${ASPEK[k]}</h2><span class="text-xs text-slate-500 shrink-0">bobot ${BOBOT[k]*100}%</span></div><div class="divide-y">`;
+    ITEMS.filter(i=>i.k===k).forEach(i=>{
+      const filled=(i.catatan||i.tindak)?' •':'';
+      h+=`<div class="py-4"><div class="item ${i.skor?'d'+i.skor:''}" id="it${i.no}">
+      <div class="font-bold leading-snug">${i.no}. ${esc(i.indikator)}</div>
+      <p class="text-sm text-slate-600 mt-1">${esc(i.panduan)}</p>
+      <div class="grid grid-cols-4 gap-2 mt-3 max-w-xl">${[1,2,3,4].map(s=>`<button type="button" class="skor${i.skor===s?' on-'+s:''}" data-no="${i.no}" data-s="${s}" aria-label="Skor ${s} ${LABEL[s]}"><span class="text-lg">${s}</span><span class="hidden sm:block text-[11px] font-medium mt-1">${LABEL[s]}</span></button>`).join('')}</div>
+      <div class="text-xs text-slate-500 mt-1.5 sm:hidden" id="lbl${i.no}">${i.skor?i.skor+' – '+LABEL[i.skor]:'Belum dinilai'}</div>
+      <details class="mt-1"><summary>+ Bukti &amp; tindak lanjut<span id="dot${i.no}">${filled}</span></summary>
+        <div class="grid sm:grid-cols-2 gap-2 mt-1">
+          <textarea rows="2" placeholder="Bukti / catatan evaluator" data-no="${i.no}" data-f="catatan">${esc(i.catatan)}</textarea>
+          <textarea rows="2" placeholder="Tindak lanjut" data-no="${i.no}" data-f="tindak">${esc(i.tindak)}</textarea>
+        </div></details>
+      </div></div>`;
+    });
+    h+='</div></section>';
+  });
+  $('indikator').innerHTML=h;
+}
+
+function hitung(){
+  const r={},n={}; let akhir=0;
+  Object.keys(BOBOT).forEach(k=>{
+    const isi=ITEMS.filter(i=>i.k===k&&i.skor>0);
+    r[k]=isi.length?isi.reduce((a,b)=>a+b.skor,0)/isi.length:0;
+    n[k]=r[k]/4*100; akhir+=n[k]*BOBOT[k];
+  });
+  return {r,n,akhir};
+}
+
+function renderRekap(){
+  const h=hitung(), done=ITEMS.filter(i=>i.skor).length, total=ITEMS.length;
+  $('bar').style.width=(total?done/total*100:0)+'%';
+  $('chips').innerHTML=Object.keys(ASPEK).filter(k=>ITEMS.some(i=>i.k===k)).map(k=>{
+    const its=ITEMS.filter(i=>i.k===k), d=its.filter(i=>i.skor).length;
+    return `<button type="button" class="chip${d===its.length?' ok':''}" data-nav="${k}">${k} ${d}/${its.length}</button>`;
+  }).join('');
+  $('rekap').innerHTML='<tr class="text-left text-slate-500 text-xs border-b"><th class="py-1.5 font-semibold">Aspek</th><th class="font-semibold">Rata-rata</th><th class="font-semibold text-right">Nilai</th></tr>'+
+    Object.keys(BOBOT).filter(k=>ITEMS.some(i=>i.k===k)).map(k=>`<tr class="border-b last:border-0"><td class="py-2 pr-2">${ASPEK[k]}<span class="text-xs text-slate-400"> ${BOBOT[k]*100}%</span></td><td class="tabular-nums">${h.r[k].toFixed(2)}</td><td class="text-right font-bold tabular-nums">${h.n[k].toFixed(1)}</td></tr>`).join('');
+  const lengkap=total>0&&done===total;
+  $('nilaiAkhir').textContent=h.akhir.toFixed(1);
+  $('mProg').textContent=done+'/'+total; $('mNilai').textContent=h.akhir.toFixed(1)+(lengkap?'':'*');
+  if(lengkap){
+    const [kat,rek]=kategori(h.akhir);
+    $('kategori').textContent=kat; $('kategori').className='font-bold '+(WARNA_KAT[kat]||''); $('rekom').textContent=rek;
+  } else {
+    $('kategori').textContent=total?'Nilai sementara':'Pilih kategori dulu'; $('kategori').className='font-bold text-slate-700';
+    $('rekom').textContent=total?`Sisa ${total-done} indikator belum dinilai.`:'';
+  }
+}
+
+function renderCoaching(){
+  const low=ITEMS.filter(i=>i.skor===1||i.skor===2);
+  if(!low.length){ $('coaching').innerHTML='<p class="text-slate-500">Belum ada indikator skor 1–2.</p>'; return; }
+  $('coaching').innerHTML=low.map(i=>{
+    const c=coachData[i.no]||{};
+    return `<div class="border rounded-xl p-3 sm:p-4"><div class="font-bold mb-2">${i.no}. ${esc(i.indikator)} <span class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100">skor ${i.skor}</span></div>
+    <div class="grid sm:grid-cols-2 gap-2">
+      <textarea rows="2" placeholder="Temuan / perilaku saat roleplay" data-c="${i.no}" data-f="temuan">${esc(c.temuan)}</textarea>
+      <textarea rows="2" placeholder="Aksi coaching / materi penguatan" data-c="${i.no}" data-f="aksi">${esc(c.aksi)}</textarea>
+      <textarea rows="2" placeholder="Target perilaku setelah coaching" data-c="${i.no}" data-f="target">${esc(c.target)}</textarea>
+      <label class="text-xs font-semibold text-slate-500">Tanggal evaluasi ulang<input type="date" data-c="${i.no}" data-f="evaluasiUlang" value="${esc(c.evaluasiUlang)}"></label>
+    </div></div>`;
+  }).join('');
+}
+
+/* ---------- Interaksi ---------- */
+document.addEventListener('click',e=>{
+  const nav=e.target.closest('[data-nav]');
+  if(nav){ $('sec-'+nav.dataset.nav).scrollIntoView(); return; }
+  const b=e.target.closest('.skor'); if(!b) return;
+  const no=+b.dataset.no, s=+b.dataset.s, it=ITEMS[no-1];
+  it.skor=it.skor===s?0:s;
+  document.querySelectorAll(`.skor[data-no="${no}"]`).forEach(x=>{ x.className='skor'+(+x.dataset.s===it.skor?' on-'+it.skor:''); });
+  const box=$('it'+no); box.className='item'+(it.skor?' d'+it.skor:'');
+  box.parentElement.classList.remove('miss'); box.classList.remove('miss');
+  $('lbl'+no).textContent=it.skor?`${it.skor} – ${LABEL[it.skor]}`:'Belum dinilai';
+  renderRekap(); renderCoaching(); persist();
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.no&&t.dataset.f){ const i=ITEMS[+t.dataset.no-1]; i[t.dataset.f]=t.value; $('dot'+i.no).textContent=(i.catatan||i.tindak)?' •':''; }
+  if(t.dataset.c){ (coachData[t.dataset.c]=coachData[t.dataset.c]||{})[t.dataset.f]=t.value; }
+  persist();
+});
+
+function toast(msg,ok,action){
+  const el=$('toast'); el.className='fixed z-40 left-1/2 -translate-x-1/2 bottom-24 lg:bottom-6 w-[92%] max-w-md rounded-xl px-4 py-3 text-sm font-semibold shadow-lg '+(ok?'bg-emerald-600 text-white':'bg-red-600 text-white');
+  el.innerHTML=`<div class="flex items-center justify-between gap-3"><span>${esc(msg)}</span>${action?`<button class="underline font-bold shrink-0" id="toastBtn">${action[0]}</button>`:''}</div>`;
+  if(action) $('toastBtn').onclick=()=>{ action[1](); el.classList.add('hidden'); };
+  clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.add('hidden'),ok&&action?12000:5000);
+}
+function setStatus(msg,ok){ $('status').textContent=msg; $('status').className='text-sm mt-3 font-semibold '+(ok?'text-emerald-600':'text-red-600'); }
+function busy(v){ ['btnSimpan','btnSimpanM'].forEach(i=>$(i).disabled=v); }
+
+async function simpan(){
+  if(!API_URL){ toast('API_URL belum diisi.',false); return; }
+  const f=id=>$(id).value.trim();
+  for(const id of ['namaSales','namaRM','tanggal','kategoriSales']){
+    if(!f(id)){ $(id).scrollIntoView({block:'center'}); $(id).focus(); toast('Nama sales, RM, tanggal penilaian, dan kategori wajib diisi.',false); return; }
+  }
+  const first=ITEMS.find(i=>!i.skor);
+  if(first){
+    ITEMS.filter(i=>!i.skor).forEach(i=>$('it'+i.no).classList.add('miss'));
+    $('it'+first.no).scrollIntoView({block:'center'});
+    toast(`Masih ${ITEMS.filter(i=>!i.skor).length} indikator belum dinilai.`,false); return;
+  }
+  const h=hitung(), [kat,rek]=kategori(h.akhir), r2=x=>Math.round(x*100)/100;
+  const payload={
+    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),
+    rata:Object.fromEntries(Object.entries(h.r).map(([k,v])=>[k,r2(v)])),
+    nilai:Object.fromEntries(Object.entries(h.n).map(([k,v])=>[k,r2(v)])),
+    nilaiAkhir:r2(h.akhir),kategori:kat,rekomendasi:rek,
+    items:ITEMS.map(i=>({no:i.no,aspek:ASPEK[i.k],indikator:i.indikator,skor:i.skor,catatan:i.catatan,tindakLanjut:i.tindak})),
+    coaching:ITEMS.filter(i=>i.skor<=2).map(i=>({indikator:i.indikator,...(coachData[i.no]||{})}))
+  };
+  busy(true); setStatus('Menyimpan…',true);
+  try{
+    const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+    const j=await res.json(); if(!j.ok) throw new Error(j.error||'Gagal menyimpan');
+    clearDraft(); setStatus('Tersimpan. ID: '+j.id,true);
+    toast('Tersimpan ke spreadsheet.',true,['Penilaian baru',()=>resetAll(true)]);
+  }catch(err){ setStatus('Gagal: '+err.message,false); toast('Gagal menyimpan: '+err.message,false); }
+  busy(false);
+}
+$('btnSimpan').onclick=simpan; $('btnSimpanM').onclick=simpan;
+
+function resetAll(skip){
+  if(skip!==true && !confirm('Kosongkan semua isian form?')) return;
+  ITEMS.forEach(i=>{i.skor=0;i.catatan='';i.tindak='';});
+  Object.keys(coachData).forEach(k=>delete coachData[k]);
+  IDS.forEach(i=>$(i).value=''); loadSet(''); syncMan(); $('tanggal').value=new Date().toISOString().slice(0,10);
+  clearDraft(); $('draftInfo').classList.add('hidden'); setStatus('',true);
+  renderItems(); renderRekap(); renderCoaching(); window.scrollTo(0,0);
+}
+$('btnReset').onclick=()=>resetAll();
+$('kategoriSales').addEventListener('change',()=>{
+  const v=$('kategoriSales').value;
+  if(ITEMS.some(i=>i.skor||i.catatan||i.tindak) && !confirm('Ganti kategori akan mengosongkan skor yang sudah diisi. Lanjut?')){ $('kategoriSales').value=curKat; return; }
+  Object.keys(coachData).forEach(k=>delete coachData[k]);
+  loadSet(v); renderItems(); renderRekap(); renderCoaching(); persist();
+});
+
+/* ---------- Hasil ---------- */
+let ROWS=[];
+const BADGE={'Sangat Baik':'bg-emerald-100 text-emerald-800','Baik':'bg-blue-100 text-blue-800','Cukup':'bg-amber-100 text-amber-800','Kurang':'bg-orange-100 text-orange-800','Belum Kompeten':'bg-red-100 text-red-800'};
+const SKOR_BG={1:'bg-red-600',2:'bg-amber-500',3:'bg-blue-600',4:'bg-emerald-600'};
+const tgl=v=>esc(String(v||'').slice(0,10));
+
+async function loadRiwayat(){
+  const box=$('riwayat');
+  if(!API_URL){ box.innerHTML='<p class="text-slate-500">API_URL belum diisi.</p>'; return; }
+  box.innerHTML='<p class="text-slate-500">Memuat…</p>';
+  try{
+    const j=await (await fetch(API_URL+'?action=list')).json(); if(!j.ok) throw new Error(j.error);
+    ROWS=j.rows; renderHasil();
+  }catch(err){ $('stats').innerHTML=''; box.innerHTML=`<p class="text-red-600">Gagal memuat: ${esc(err.message)}</p>`; }
+}
+function renderHasil(){
+  const q=$('fCari').value.trim().toLowerCase(), fk=$('fKat').value, fr=$('fRM').value, fh=$('fHasil').value;
+  const rows=ROWS.filter(r=>(!q||String(r['Nama Sales']).toLowerCase().includes(q))&&(!fk||r['Kategori Sales']===fk)&&(!fr||r['Nama RM']===fr)&&(!fh||r['Kategori']===fh));
+  const avg=rows.length?rows.reduce((a,r)=>a+Number(r['Nilai Akhir']),0)/rows.length:0;
+  $('stats').innerHTML=[['Penilaian',rows.length],['Rata-rata nilai',avg.toFixed(1)],['Nilai ≥ 80',rows.filter(r=>Number(r['Nilai Akhir'])>=80).length]]
+    .map(x=>`<div class="card p-3"><div class="text-xs text-slate-500">${x[0]}</div><div class="text-2xl font-extrabold tabular-nums">${x[1]}</div></div>`).join('');
+  $('riwayat').innerHTML=rows.length?rows.map(r=>`<button type="button" class="card p-4 text-left flex items-center gap-4 hover:shadow-md" data-id="${esc(r['ID'])}">
+    <div class="text-3xl font-extrabold tabular-nums shrink-0 ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
+    <div class="min-w-0"><div class="font-bold truncate">${esc(r['Nama Sales'])} <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 align-middle">${esc(r['Kategori Sales'])}</span></div>
+    <div class="text-xs text-slate-500 truncate">RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])}</div>
+    <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span></div></div></button>`).join('')
+    :'<p class="text-slate-500 sm:col-span-2 lg:col-span-3">Tidak ada data yang cocok.</p>';
+}
+['fCari','fKat','fRM','fHasil'].forEach(id=>$(id).addEventListener('input',renderHasil));
+$('btnRefresh').onclick=loadRiwayat;
+$('riwayat').addEventListener('click',e=>{ const b=e.target.closest('[data-id]'); if(b) openDetail(b.dataset.id); });
+
+function closeModal(){ $('modal').classList.add('hidden'); document.body.style.overflow=''; }
+$('mdClose').onclick=closeModal;
+$('modal').addEventListener('click',e=>{ if(e.target===$('modal')) closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+async function openDetail(id){
+  const r=ROWS.find(x=>x['ID']===id); if(!r) return;
+  const bobot=(SETS[r['Kategori Sales']]||{}).bobot||{};
+  const rekap=Object.keys(ASPEK).filter(k=>bobot[k]).map(k=>`<tr class="border-b last:border-0"><td class="py-2">${ASPEK[k]} <span class="text-xs text-slate-400">${Math.round(bobot[k]*100)}%</span></td><td class="tabular-nums">${Number(r['Rata '+k]).toFixed(2)}</td><td class="text-right font-bold tabular-nums">${Number(r['Nilai '+k]).toFixed(1)}</td></tr>`).join('');
+  $('mdBody').innerHTML=`<h3 class="text-lg font-extrabold pr-10">${esc(r['Nama Sales'])}</h3>
+    <p class="text-sm text-slate-600">${esc(r['Kategori Sales'])} · ${tgl(r['Tanggal Penilaian'])}<br>RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])} · Spv: ${esc(r['Nama Spv'])}</p>
+    <div class="mt-4 flex items-center gap-4"><div class="text-4xl font-extrabold tabular-nums ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
+      <div><div class="font-bold">${esc(r['Kategori'])}</div><div class="text-xs text-slate-600">${esc(r['Rekomendasi'])}</div></div></div>
+    <table class="w-full text-sm mt-4"><tr class="text-left text-slate-500 text-xs border-b"><th class="py-1.5 font-semibold">Aspek</th><th class="font-semibold">Rata-rata</th><th class="font-semibold text-right">Nilai</th></tr>${rekap}</table>
+    <p id="mdDet" class="text-sm text-slate-500 mt-5">Memuat detail indikator…</p>`;
+  $('modal').classList.remove('hidden'); document.body.style.overflow='hidden';
+  try{
+    const j=await (await fetch(API_URL+'?action=detail&id='+encodeURIComponent(id))).json(); if(!j.ok) throw new Error(j.error);
+    let out='', last='';
+    j.rows.forEach(d=>{
+      if(d['Aspek']!==last){ last=d['Aspek']; out+=`<h4 class="font-extrabold mt-4 mb-1">${esc(last)}</h4>`; }
+      out+=`<div class="py-2 border-b last:border-0 flex gap-3"><span class="shrink-0 w-7 h-7 rounded-lg text-white text-sm font-bold flex items-center justify-center ${SKOR_BG[d['Skor']]||'bg-slate-400'}">${esc(d['Skor'])}</span>
+        <div class="min-w-0 text-sm"><div class="font-semibold">${esc(d['No'])}. ${esc(d['Indikator'])}</div>
+        ${d['Bukti/Catatan']?`<div class="text-slate-600">Bukti: ${esc(d['Bukti/Catatan'])}</div>`:''}
+        ${d['Tindak Lanjut']?`<div class="text-slate-600">Tindak lanjut: ${esc(d['Tindak Lanjut'])}</div>`:''}</div></div>`;
+    });
+    if((j.coaching||[]).length){
+      out+='<h4 class="font-extrabold mt-5 mb-1">Rencana Coaching</h4>'+j.coaching.map(c=>`<div class="border rounded-xl p-3 mb-2 text-sm"><div class="font-semibold">${esc(c['Indikator'])}</div>
+        ${c['Temuan']?`<div class="text-slate-600">Temuan: ${esc(c['Temuan'])}</div>`:''}
+        ${c['Aksi Coaching']?`<div class="text-slate-600">Aksi: ${esc(c['Aksi Coaching'])}</div>`:''}
+        ${c['Target Perilaku']?`<div class="text-slate-600">Target: ${esc(c['Target Perilaku'])}</div>`:''}
+        ${c['Tgl Evaluasi Ulang']?`<div class="text-slate-600">Evaluasi ulang: ${tgl(c['Tgl Evaluasi Ulang'])}</div>`:''}</div>`).join('');
+    }
+    $('mdDet').outerHTML=out||'<p class="text-sm text-slate-500 mt-5">Detail indikator tidak ditemukan.</p>';
+  }catch(err){ $('mdDet').textContent='Gagal memuat detail: '+err.message; }
+}
+function tab(t){
+  const f=t==='form';
+  $('viewForm').classList.toggle('hidden',!f); $('viewRiwayat').classList.toggle('hidden',f);
+  $('navBar').classList.toggle('hidden',!f); $('bottomBar').classList.toggle('hidden',!f);
+  $('tabForm').className='px-3 sm:px-4 py-2 rounded-lg '+(f?'bg-white text-[#1f3a5f]':'bg-white/15');
+  $('tabRiwayat').className='px-3 sm:px-4 py-2 rounded-lg '+(!f?'bg-white text-[#1f3a5f]':'bg-white/15');
+  if(!f) loadRiwayat();
+}
+$('tabForm').onclick=()=>tab('form'); $('tabRiwayat').onclick=()=>tab('riwayat');
+
+/* ---------- Init ---------- */
+$('tanggal').value=new Date().toISOString().slice(0,10);
+if(!API_URL) $('warn').classList.remove('hidden');
+fillMan();
+if(restore()) $('draftInfo').classList.remove('hidden');
+renderItems(); renderRekap(); renderCoaching();
+</script>
+</body>
+</html>
