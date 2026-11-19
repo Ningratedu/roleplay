@@ -105,6 +105,7 @@
         <label class="text-sm font-semibold">Tanggal Penilaian<input id="tanggal" type="date"></label>
         <label class="text-sm font-semibold">Kategori
           <select id="kategoriSales"><option value="">Pilih kategori</option><option>Gold</option><option>Non Gold</option></select></label>
+        <label class="text-sm font-semibold sm:col-span-2 xl:col-span-3">Link Video Roleplay <span class="font-normal text-slate-500">(opsional)</span><input id="linkVideo" type="url" inputmode="url" placeholder="https://drive.google.com/… atau link YouTube" autocomplete="off"></label>
       </div>
       <div id="indikator" class="space-y-5"></div>
       <div class="card p-4 sm:p-5 mt-5">
@@ -187,7 +188,40 @@ const PANDUAN = {
   4:{d:'Akurat, lancar, relevan dengan kebutuhan, empatik, dan mampu mengarahkan tindak lanjut.',c:'Menggali kekhawatiran keamanan, menjelaskan CCTV/security dan panic button, lalu memastikan pemahaman konsumen.'}
  }
 };
-const tipOf = s => (PANDUAN[curKat]||PANDUAN['Non Gold'])[s];
+/* Rubrik per indikator: [skor 1, skor 2, skor 3, skor 4] */
+const RB = {
+ lokasi:['Tidak bisa menjelaskan 30 titik lokasi, atau informasinya keliru.','Hanya menyebut “30 titik” atau beberapa lokasi tanpa mengaitkan dengan pilihan konsumen; perlu dipancing.','Menjelaskan 30 titik lokasi dengan benar dan runtut, dengan sedikit kaitan ke lokasi yang relevan bagi konsumen.','Menjelaskan akurat dan lancar, mengaitkan titik lokasi dengan kebutuhan/pilihan konsumen (akses, domisili, tempat kerja) tanpa melebih-lebihkan.'],
+ developer:['Tidak bisa menjelaskan siapa developer, atau memberi informasi keliru.','Menyebut developer secara umum tanpa alasan yang membangun kepercayaan; ragu atau tidak runtut.','Menjelaskan identitas dan kredibilitas developer sesuai materi dengan bahasa sederhana.','Menjelaskan identitas dan rekam jejak developer secara akurat, dengan alasan relevan sehingga konsumen merasa percaya.'],
+ penghargaan:['Tidak menyebut penghargaan, atau mengarang nama, kategori, atau tahun.','Menyebut ada penghargaan tetapi ragu/tidak jelas dan tidak mengaitkannya dengan kredibilitas.','Menyebut penghargaan 3X berturut-turut dengan benar sebagai bukti kredibilitas.','Menyampaikan penghargaan secara akurat dan lancar sebagai pendukung kepercayaan, tanpa menambah detail di luar materi.'],
+ pagar:['Tidak bisa menjelaskan program gratis pagar, atau menjanjikan hal di luar program.','Menyebut gratis pagar tetapi manfaat dan ketentuannya tidak jelas.','Menjelaskan manfaat gratis pagar dan ketentuan yang berlaku dengan benar.','Menjelaskan manfaat dan ketentuan secara akurat, mengaitkannya dengan kebutuhan konsumen, tanpa janji berlebihan.'],
+ kebutuhan:['Langsung menawarkan rumah tanpa menanyakan kebutuhan, atau informasi unit keliru.','Menanyakan sebagian kebutuhan saja (mis. hanya budget); aspek lain baru muncul setelah dipancing.','Menggali unit, akses, lingkungan, listrik, air, dan biaya dengan cukup lengkap sebelum merekomendasikan.','Menggali menyeluruh, mengonfirmasi prioritas konsumen/keluarga, lalu merekomendasikan unit yang cocok dengan alasan jelas.'],
+ hubungkan:['Hanya membaca atau menyebut fitur tanpa menjelaskan manfaatnya.','Menyebut manfaat secara umum, tidak terkait kondisi atau keberatan konsumen.','Mengubah sebagian besar fitur menjadi manfaat yang relevan bagi konsumen.','Konsisten mengubah fitur menjadi manfaat yang tepat sasaran terhadap kondisi dan keberatan konsumen.'],
+ progres:['Tidak tahu progres bisa dipantau lewat aplikasi, atau informasinya keliru.','Menyebut ada aplikasi tetapi tidak menjelaskan fitur dan manfaatnya.','Menjelaskan bahwa progres dapat dipantau lewat aplikasi sesuai fitur yang tersedia, dengan jelas.','Menjelaskan fitur dan manfaat pemantauan progres secara akurat, mengaitkan dengan kebutuhan konsumen, dan mengarahkan ke fitur terkait.'],
+ demo:['Tidak bisa menjelaskan langkah mengakses progres.','Menyebut nama aplikasi/fitur tetapi langkahnya tidak runtut atau membingungkan.','Menjelaskan langkah penggunaan secara runtut dan cukup mudah diikuti.','Menjelaskan/mendemonstrasikan langkah secara runtut dengan bahasa sederhana, lalu memastikan konsumen paham.'],
+ pengaduan:['Tidak bisa menjelaskan fungsi pengaduan dan penilaian pelayanan.','Menyebut ada menu pengaduan tetapi fungsi dan manfaatnya tidak jelas.','Menjelaskan fungsi pengaduan dan penilaian pelayanan sebagai saluran keluhan/masukan dengan benar.','Menjelaskan secara akurat dan meyakinkan bahwa konsumen punya saluran jelas bila ada kendala atau masukan.'],
+ keluhan:['Tidak bisa menjelaskan cara menyampaikan keluhan.','Menyebut lewat aplikasi, tetapi alur dan informasi yang perlu disiapkan tidak jelas.','Menjelaskan cara menyampaikan keluhan lewat aplikasi beserta informasi yang perlu disiapkan.','Menjelaskan alur keluhan secara runtut dan lengkap, memastikan konsumen tahu apa yang perlu disiapkan.'],
+ voucher:['Tidak bisa menjelaskan voucher, atau menyatakan otomatis berlaku tanpa syarat.','Menyebut ada voucher tetapi syarat dan ketentuannya tidak jelas atau ragu.','Menjelaskan voucher sesuai materi dan menyebut berlaku sesuai syarat dan ketentuan.','Menjelaskan voucher secara akurat, menegaskan syarat/verifikasi, tidak menjanjikan otomatis, dan menenangkan kekhawatiran konsumen.'],
+ respons:['Defensif, mengabaikan kekhawatiran, atau memberi janji yang tidak bisa dipastikan.','Menanggapi tetapi kurang tenang, ragu, atau tidak menjelaskan saluran pemantauan.','Mendengarkan, menjawab dengan tenang, dan menyebut saluran pemantauan/eskalasi.','Mendengarkan dengan empati, menjawab tenang dan tidak defensif, menjelaskan saluran pemantauan/eskalasi, hingga konsumen merasa tenang.'],
+ lingkungan:['Tidak bisa menjelaskan pengelolaan lingkungan bersama.','Menyebut pengelolaan lingkungan tanpa menjelaskan layanan atau pihak yang berperan.','Menjelaskan bahwa lingkungan dikelola bersama dan memberi gambaran peran layanan pengelolaan.','Menjelaskan akurat dan jelas, mengaitkan dengan kenyamanan hidup konsumen setelah menempati rumah.'],
+ lingkunganG:['Tidak bisa menjelaskan pengelolaan lingkungan/IPL, atau mengarang nominal dan cakupan.','Menyebut IPL/pengelolaan secara umum; cakupan layanan tidak jelas.','Menjelaskan pengelolaan lingkungan, peran layanan, dan pembayaran IPL sesuai cakupan yang berlaku.','Menjelaskan menyeluruh dan akurat tanpa mengarang nominal/cakupan, serta mengaitkan dengan manfaat bagi warga.'],
+ ipl:['Tidak bisa menjelaskan layanan lingkungan/IPL, atau mengarang nominal dan cakupan.','Menyebut IPL tetapi layanan dan cara pembayarannya tidak jelas.','Menjelaskan layanan lingkungan dan pembayaran IPL dengan jelas.','Menjelaskan layanan dan pembayaran IPL secara akurat tanpa mengarang nominal/cakupan, serta mengaitkan dengan manfaat bagi warga.'],
+ aftersales:['Tidak bisa menjelaskan layanan after sales.','Menyebut ada after sales tanpa menjelaskan jalur dan cara mengakses bantuan.','Menjelaskan jalur layanan setelah rumah ditempati dan cara konsumen mengakses bantuan.','Menjelaskan jalur layanan dan proses menyampaikan kendala secara akurat, menegaskan penanganan mengikuti cakupan dan ketentuan.'],
+ kerusakan:['Tidak bisa menjelaskan pengaduan kerusakan/kendala, atau menjanjikan semuanya pasti ditanggung.','Menyebut bisa mengadu tetapi proses dan batas cakupannya tidak jelas.','Menjelaskan proses pengaduan dan bahwa penanganan mengikuti cakupan serta ketentuan yang berlaku.','Menjelaskan proses secara runtut dan akurat, menegaskan cakupan/ketentuan, tanpa janji berlebihan.'],
+ kpr:['Tidak bisa menjelaskan fitur cek berkas KPR, atau informasinya keliru.','Menyebut ada fitur tetapi tidak menjelaskan fungsinya.','Menjelaskan bahwa progres pemenuhan berkas KPR dapat dipantau lewat aplikasi sesuai fitur yang tersedia.','Menjelaskan fitur dan manfaatnya bagi proses KPR konsumen secara akurat, serta mengarahkan cara mengaksesnya.'],
+ cctv:['Tidak bisa menjelaskan CCTV/security, atau menjamin tidak ada risiko.','Menyebut CCTV/security tetapi tidak menjelaskan informasi yang ada dalam materi.','Menjelaskan CCTV dan security 24 jam sesuai materi serta mengaitkannya dengan rasa aman warga.','Menjelaskan akurat sesuai materi, mengaitkan dengan kekhawatiran keamanan konsumen, tanpa menjamin tidak ada risiko.'],
+ panic:['Tidak bisa menjelaskan fungsi panic button, atau mengarang jaminan keamanan.','Menyebut ada panic button tetapi fungsi dan cara pakainya tidak jelas.','Menjelaskan fungsi panic button dan cara warga menggunakannya atau menghubungi petugas.','Menjelaskan fungsi dan cara pakai secara akurat sesuai mekanisme yang berlaku, disertai contoh situasi penggunaan.'],
+ buka:['Tidak menyapa, canggung, atau sikap kurang profesional.','Menyapa seadanya, kurang memperkenalkan diri, suasana kurang nyaman.','Menyapa, memperkenalkan diri, dan bersikap ramah serta profesional.','Pembukaan hangat dan profesional, membangun kenyamanan dan kepercayaan sejak awal.'],
+ gali:['Tidak menanyakan kebutuhan atau kekhawatiran konsumen.','Bertanya sedikit/tertutup dan kurang menyimak; perlu dipancing.','Mengajukan pertanyaan terbuka, menyimak, dan mengonfirmasi kebutuhan.','Pertanyaan terbuka tepat sasaran, mendengarkan aktif, mengonfirmasi kebutuhan dan kekhawatiran sebelum menawarkan.'],
+ manfaat:['Hanya membaca/menghafal materi, bahasa sulit dipahami.','Menjelaskan fitur dengan sedikit manfaat; alur kurang runtut.','Menjelaskan manfaat dengan bahasa sederhana dan alur runtut.','Menjelaskan manfaat nyata bagi konsumen dengan bahasa sederhana dan runtut, tidak sekadar menghafal.'],
+ keberatan:['Memotong pembicaraan, menjawab keliru, atau membuat janji berlebihan.','Menjawab ragu atau tidak tuntas; tampak tegang.','Tidak memotong, menjawab sesuai informasi, dan mengakui bila perlu konfirmasi.','Mendengarkan tuntas, menjawab tenang dan akurat, mengonfirmasi bila belum tahu, tanpa janji berlebihan.'],
+ closing:['Tidak mengarahkan ke langkah berikutnya.','Menawarkan tindak lanjut secara umum atau terkesan memaksa, tidak sesuai kesiapan konsumen.','Menawarkan langkah konkret seperti cek lokasi atau konsultasi unit.','Merangkum manfaat yang relevan, lalu menawarkan langkah konkret sesuai kesiapan konsumen.']
+};
+/* Urutan sama dengan daftar indikator tiap kategori */
+const RB_MAP = {
+ 'Non Gold':['lokasi','developer','penghargaan','pagar','kebutuhan','hubungkan','progres','demo','pengaduan','keluhan','voucher','respons','lingkungan','ipl','aftersales','kerusakan','buka','gali','manfaat','keberatan','closing'],
+ 'Gold':['lokasi','developer','penghargaan','pagar','kebutuhan','kpr','progres','demo','pengaduan','voucher','cctv','panic','lingkunganG','aftersales','buka','gali','manfaat','keberatan','closing']
+};
+const tipOf = (no,s) => { const it=ITEMS[no-1]; if(it&&it.rubrik) return it.rubrik[s-1]; const g=(PANDUAN[curKat]||PANDUAN['Non Gold'])[s]; return g?g.d:''; };
 const ASPEK = {A:'A. Sebelum Membeli', B:'B. Selama Pembangunan', C:'C. Setelah Menjadi Warga', D:'D. Komunikasi & Closing'};
 const SETS = {
  'Non Gold': {bobot:{A:0.30,B:0.35,C:0.20,D:0.15}, items:[
@@ -240,12 +274,12 @@ function loadSet(name){
   curKat=name; const s=SETS[name];
   if(!s){ ITEMS=[]; BOBOT={A:0,B:0,C:0,D:0}; return; }
   BOBOT=s.bobot;
-  ITEMS=s.items.map((x,i)=>({no:i+1,k:x[0],indikator:x[1],panduan:x[2],skor:0,catatan:'',tindak:''}));
+  ITEMS=s.items.map((x,i)=>({no:i+1,k:x[0],indikator:x[1],panduan:x[2],rubrik:RB[(RB_MAP[name]||[])[i]]||null,skor:0,catatan:'',tindak:''}));
 }
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales'];
+const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales','linkVideo'];
 const WARNA_KAT={'Sangat Baik':'text-emerald-600','Baik':'text-blue-600','Cukup':'text-amber-600','Kurang':'text-orange-600','Belum Kompeten':'text-red-600'};
 const coachData={};
 const BM_LIST=['Arief Munandar','Johan Budi Aji','Nal Firdaus','Pupu Hadiningrat','Rendy Dwisakti Saputra','Sintaka Hari Cahyono','Topo Nurochman','Wahyu Rusnanto','Yosfana Kevin Dinasty'];
@@ -300,7 +334,7 @@ function renderItems(){
       h+=`<div class="py-4"><div class="item ${i.skor?'d'+i.skor:''}" id="it${i.no}">
       <div class="font-bold leading-snug">${i.no}. ${esc(i.indikator)}</div>
       <p class="text-sm text-slate-600 mt-1">${esc(i.panduan)}</p>
-      <div class="grid grid-cols-4 gap-2 mt-3 max-w-xl">${[1,2,3,4].map(s=>`<button type="button" class="skor${i.skor===s?' on-'+s:''}" data-no="${i.no}" data-s="${s}" aria-label="Skor ${s} ${LABEL[s]}. ${esc(tipOf(s).d)}"><span class="text-lg">${s}</span><span class="hidden sm:block text-[11px] font-medium mt-1">${LABEL[s]}</span></button>`).join('')}</div>
+      <div class="grid grid-cols-4 gap-2 mt-3 max-w-xl">${[1,2,3,4].map(s=>`<button type="button" class="skor${i.skor===s?' on-'+s:''}" data-no="${i.no}" data-s="${s}" aria-label="Skor ${s} ${LABEL[s]}. ${esc(tipOf(i.no,s))}"><span class="text-lg">${s}</span><span class="hidden sm:block text-[11px] font-medium mt-1">${LABEL[s]}</span></button>`).join('')}</div>
       <div class="text-xs text-slate-500 mt-1.5 sm:hidden" id="lbl${i.no}">${i.skor?i.skor+' – '+LABEL[i.skor]:'Belum dinilai'}</div>
       <details class="mt-1"><summary>+ Bukti &amp; tindak lanjut<span id="dot${i.no}">${filled}</span></summary>
         <div class="grid sm:grid-cols-2 gap-2 mt-1">
@@ -395,6 +429,7 @@ async function simpan(){
   for(const id of ['namaSales','namaRM','tanggal','kategoriSales']){
     if(!f(id)){ $(id).scrollIntoView({block:'center'}); $(id).focus(); toast('Nama sales, RM, tanggal penilaian, dan kategori wajib diisi.',false); return; }
   }
+  if(f('linkVideo') && !/^https?:\/\/\S+$/i.test(f('linkVideo'))){ $('linkVideo').scrollIntoView({block:'center'}); $('linkVideo').focus(); toast('Link video harus diawali http:// atau https://',false); return; }
   const first=ITEMS.find(i=>!i.skor);
   if(first){
     ITEMS.filter(i=>!i.skor).forEach(i=>$('it'+i.no).classList.add('miss'));
@@ -403,7 +438,7 @@ async function simpan(){
   }
   const h=hitung(), [kat,rek]=kategori(h.akhir), r2=x=>Math.round(x*100)/100;
   const payload={
-    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),
+    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),linkVideo:f('linkVideo'),
     rata:Object.fromEntries(Object.entries(h.r).map(([k,v])=>[k,r2(v)])),
     nilai:Object.fromEntries(Object.entries(h.n).map(([k,v])=>[k,r2(v)])),
     nilaiAkhir:r2(h.akhir),kategori:kat,rekomendasi:rek,
@@ -465,6 +500,7 @@ function renderHasil(){
     <div class="text-3xl font-extrabold tabular-nums shrink-0 ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
     <div class="min-w-0"><div class="font-bold truncate">${esc(r['Nama Sales'])} <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 align-middle">${esc(r['Kategori Sales'])}</span></div>
     <div class="text-xs text-slate-500 truncate">RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])}</div>
+    <div class="text-xs text-slate-500 truncate">Spv: ${esc(r['Nama Spv']||'-')}</div>
     <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span></div></div></button>`).join('')
     :'<p class="text-slate-500 sm:col-span-2 lg:col-span-3">Tidak ada data yang cocok.</p>';
 }
@@ -484,6 +520,7 @@ async function openDetail(id){
   const rekap=Object.keys(ASPEK).filter(k=>bobot[k]).map(k=>`<tr class="border-b last:border-0"><td class="py-2">${ASPEK[k]} <span class="text-xs text-slate-400">${Math.round(bobot[k]*100)}%</span></td><td class="tabular-nums">${Number(r['Rata '+k]).toFixed(2)}</td><td class="text-right font-bold tabular-nums">${Number(r['Nilai '+k]).toFixed(1)}</td></tr>`).join('');
   $('mdBody').innerHTML=`<h3 class="text-lg font-extrabold pr-10">${esc(r['Nama Sales'])}</h3>
     <p class="text-sm text-slate-600">${esc(r['Kategori Sales'])} · ${tgl(r['Tanggal Penilaian'])}<br>RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])} · Spv: ${esc(r['Nama Spv'])}</p>
+    ${/^https?:\/\//i.test(r['Link Video']||'')?`<p class="text-sm mt-2"><a href="${esc(r['Link Video'])}" target="_blank" rel="noopener noreferrer" class="font-semibold text-blue-700 underline break-all">▶ Buka video roleplay</a></p>`:''}
     <div class="mt-4 flex items-center gap-4"><div class="text-4xl font-extrabold tabular-nums ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
       <div><div class="font-bold">${esc(r['Kategori'])}</div><div class="text-xs text-slate-600">${esc(r['Rekomendasi'])}</div></div></div>
     <table class="w-full text-sm mt-4"><tr class="text-left text-slate-500 text-xs border-b"><th class="py-1.5 font-semibold">Aspek</th><th class="font-semibold">Rata-rata</th><th class="font-semibold text-right">Nilai</th></tr>${rekap}</table>
@@ -525,9 +562,9 @@ const TIPCOL={1:'#dc2626',2:'#d97706',3:'#1d4ed8',4:'#059669'};
 let tipTimer=null, pressTimer=null, noClick=false;
 const skorOf=e=>e.target.closest?e.target.closest('.skor'):null;
 function showTip(btn){
-  const s=+btn.dataset.s, t=tipOf(s); if(!t) return;
+  const s=+btn.dataset.s, t=tipOf(+btn.dataset.no,s); if(!t) return;
   clearTimeout(tipTimer);
-  tipEl.innerHTML=`<div class="tt-h"><span style="background:${TIPCOL[s]}">${s}</span>${esc(LABEL[s])}</div><p>${esc(t.d)}</p><p class="tt-c"><b>Contoh:</b> ${esc(t.c)}</p>`;
+  tipEl.innerHTML=`<div class="tt-h"><span style="background:${TIPCOL[s]}">${s}</span>${esc(LABEL[s])}</div><p>${esc(t)}</p>`;
   tipEl.style.left='0px'; tipEl.style.top='0px'; tipEl.classList.add('show');
   const r=btn.getBoundingClientRect(), w=tipEl.offsetWidth, h=tipEl.offsetHeight, m=8;
   const x=Math.max(m,Math.min(r.left+r.width/2-w/2,innerWidth-w-m));
