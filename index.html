@@ -109,7 +109,7 @@
       </div>
       <div id="indikator" class="space-y-5"></div>
       <div class="card p-4 sm:p-5 mt-5">
-        <h2 class="font-extrabold text-lg">Rencana Coaching</h2>
+        <h2 class="font-extrabold text-lg">Rekomendasi Coaching</h2>
         <p class="text-sm text-slate-600 mb-3">Indikator dengan skor 1 atau 2 muncul otomatis di sini.</p>
         <div id="coaching" class="space-y-4 text-sm"></div>
       </div>
@@ -549,7 +549,7 @@ async function openDetail(id){
     });
     if(open) out+='</tbody></table></div>';
     if((j.coaching||[]).length){
-      out+='<h4 class="font-extrabold mt-5 mb-1">Rencana Coaching</h4>'+j.coaching.map(c=>`<div class="border rounded-xl p-3 mb-2 text-sm"><div class="font-semibold">${esc(c['Indikator'])}</div>
+      out+='<h4 class="font-extrabold mt-5 mb-1">Rekomendasi Coaching</h4>'+j.coaching.map(c=>`<div class="border rounded-xl p-3 mb-2 text-sm"><div class="font-semibold">${esc(c['Indikator'])}</div>
         ${c['Temuan']?`<div class="text-slate-600">Temuan: ${esc(c['Temuan'])}</div>`:''}
         ${c['Aksi Coaching']?`<div class="text-slate-600">Aksi: ${esc(c['Aksi Coaching'])}</div>`:''}
         ${c['Target Perilaku']?`<div class="text-slate-600">Target: ${esc(c['Target Perilaku'])}</div>`:''}
