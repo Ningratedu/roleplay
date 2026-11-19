@@ -450,7 +450,7 @@ async function simpan(){
     const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
     const j=await res.json(); if(!j.ok) throw new Error(j.error||'Gagal menyimpan');
     clearDraft(); setStatus('Tersimpan. ID: '+j.id,true);
-    toast('Tersimpan ke spreadsheet.',true,['Penilaian baru',()=>resetAll(true)]);
+    toast('Penilaian berhasil disimpan.',true,['Penilaian baru',()=>resetAll(true)]);
   }catch(err){ setStatus('Gagal: '+err.message,false); toast('Gagal menyimpan: '+err.message,false); }
   busy(false);
 }
@@ -497,21 +497,20 @@ function renderHasil(){
   const avg=rows.length?rows.reduce((a,r)=>a+Number(r['Nilai Akhir']),0)/rows.length:0;
   $('stats').innerHTML=[['Penilaian',rows.length],['Rata-rata nilai',avg.toFixed(1)],['Nilai ≥ 80',rows.filter(r=>Number(r['Nilai Akhir'])>=80).length]]
     .map(x=>`<div class="card p-3"><div class="text-xs text-slate-500">${x[0]}</div><div class="text-2xl font-extrabold tabular-nums">${x[1]}</div></div>`).join('');
-  $('riwayat').innerHTML=rows.length?rows.map(r=>`<div role="button" tabindex="0" class="card p-4 text-left flex items-center gap-4 hover:shadow-md cursor-pointer" data-id="${esc(r['ID'])}">
+  $('riwayat').innerHTML=rows.length?rows.map(r=>`<button type="button" class="card p-4 text-left flex items-center gap-4 hover:shadow-md" data-id="${esc(r['ID'])}">
     <div class="text-3xl font-extrabold tabular-nums shrink-0 ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
     <div class="min-w-0"><div class="font-bold truncate">${esc(r['Nama Sales'])} <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 align-middle">${esc(r['Kategori Sales'])}</span></div>
     <div class="text-xs text-slate-500 truncate">RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])}</div>
     <div class="text-xs text-slate-500 truncate">Spv: ${esc(r['Nama Spv']||'-')}</div>
-    <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span></div>${videoOf(r)?`<a href="${esc(videoOf(r))}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-sm font-semibold hover:bg-blue-100" aria-label="Putar video roleplay ${esc(r['Nama Sales'])}">▶ Putar video</a>`:''}</div></div>`).join('')
+    <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span>${videoOf(r)?' · <span class="font-semibold text-[#1f3a5f]">▶ Video</span>':''}</div></div></button>`).join('')
     :'<p class="text-slate-500 sm:col-span-2 lg:col-span-3">Tidak ada data yang cocok.</p>';
 }
 ['fCari','fKat','fRM','fHasil'].forEach(id=>$(id).addEventListener('input',renderHasil));
 $('fCariClear').onclick=()=>{ $('fCari').value=''; renderHasil(); $('fCari').focus(); };
 $('btnRefresh').onclick=loadRiwayat;
-$('riwayat').addEventListener('click',e=>{ if(e.target.closest('a')) return; const b=e.target.closest('[data-id]'); if(b) openDetail(b.dataset.id); });
-$('riwayat').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-id]')){ e.preventDefault(); openDetail(e.target.dataset.id); } });
+$('riwayat').addEventListener('click',e=>{ const b=e.target.closest('[data-id]'); if(b) openDetail(b.dataset.id); });
 
-function closeModal(){ $('modal').classList.add('hidden'); document.body.style.overflow=''; }
+function closeModal(){ $('modal').classList.add('hidden'); $('mdBody').innerHTML=''; document.body.style.overflow=''; }
 $('mdClose').onclick=closeModal;
 $('modal').addEventListener('click',e=>{ if(e.target===$('modal')) closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
@@ -523,14 +522,15 @@ async function openDetail(id){
   const rekap=Object.keys(ASPEK).filter(k=>bobot[k]).map(k=>`<tr class="border-b last:border-0"><td class="py-2">${ASPEK[k]} <span class="text-xs text-slate-400">${Math.round(bobot[k]*100)}%</span></td><td class="tabular-nums">${Number(r['Rata '+k]).toFixed(2)}</td><td class="text-right font-bold tabular-nums">${Number(r['Nilai '+k]).toFixed(1)}</td></tr>`).join('');
   $('mdBody').innerHTML=`<h3 class="text-lg font-extrabold pr-10">${esc(r['Nama Sales'])}</h3>
     <p class="text-sm text-slate-600">${esc(r['Kategori Sales'])} · ${tgl(r['Tanggal Penilaian'])}<br>RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])} · Spv: ${esc(r['Nama Spv'])}</p>
-    ${lv?`<p class="text-sm mt-2"><a href="${esc(lv)}" target="_blank" rel="noopener noreferrer" class="font-semibold text-blue-700 underline break-all">▶ Buka video roleplay</a></p>`:''}
     <div class="mt-4 flex items-center gap-4"><div class="text-4xl font-extrabold tabular-nums ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
       <div><div class="font-bold">${esc(r['Kategori'])}</div><div class="text-xs text-slate-600">${esc(r['Rekomendasi'])}</div></div></div>
+    ${videoHtml(lv)}
     <table class="w-full text-sm mt-4"><tr class="text-left text-slate-500 text-xs border-b"><th class="py-1.5 font-semibold">Aspek</th><th class="font-semibold">Rata-rata</th><th class="font-semibold text-right">Nilai</th></tr>${rekap}</table>
     <p id="mdDet" class="text-sm text-slate-500 mt-5">Memuat detail indikator…</p>`;
   $('modal').classList.remove('hidden'); document.body.style.overflow='hidden';
   try{
     const j=await (await fetch(API_URL+'?action=detail&id='+encodeURIComponent(id))).json(); if(!j.ok) throw new Error(j.error);
+    if(!$('mdDet')) return;
     let out='', last='';
     j.rows.forEach(d=>{
       if(d['Aspek']!==last){ last=d['Aspek']; out+=`<h4 class="font-extrabold mt-4 mb-1">${esc(last)}</h4>`; }
@@ -547,7 +547,7 @@ async function openDetail(id){
         ${c['Tgl Evaluasi Ulang']?`<div class="text-slate-600">Evaluasi ulang: ${tgl(c['Tgl Evaluasi Ulang'])}</div>`:''}</div>`).join('');
     }
     $('mdDet').outerHTML=out||'<p class="text-sm text-slate-500 mt-5">Detail indikator tidak ditemukan.</p>';
-  }catch(err){ $('mdDet').textContent='Gagal memuat detail: '+err.message; }
+  }catch(err){ if($('mdDet')) $('mdDet').textContent='Gagal memuat detail: '+err.message; }
 }
 function tab(t){
   const f=t==='form';
@@ -593,6 +593,35 @@ document.addEventListener('touchmove',()=>clearTimeout(pressTimer),{passive:true
 document.addEventListener('click',e=>{ if(noClick){ noClick=false; e.stopImmediatePropagation(); e.preventDefault(); } },true);
 document.addEventListener('contextmenu',e=>{ if(skorOf(e)) e.preventDefault(); });
 window.addEventListener('scroll',hideTip,{passive:true});
+
+/* ---------- Pemutar video (di dalam detail hasil) ---------- */
+function embedOf(u){
+  let url, m; try{ url=new URL(u); }catch(e){ return null; }
+  const h=url.hostname.replace(/^(www|m)\./,'');
+  if(h==='youtu.be'){ const id=url.pathname.slice(1).split('/')[0]; if(id) return {src:'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id)+'?rel=0'}; }
+  if(h==='youtube.com'||h==='music.youtube.com'){
+    let id=url.searchParams.get('v');
+    if(!id&&(m=url.pathname.match(/^\/(?:embed|shorts|live|v)\/([\w-]{6,})/))) id=m[1];
+    if(id) return {src:'https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id)+'?rel=0'};
+  }
+  if(h==='drive.google.com'){
+    m=url.pathname.match(/\/file\/d\/([\w-]+)/); const id=m?m[1]:url.searchParams.get('id');
+    if(id) return {src:'https://drive.google.com/file/d/'+encodeURIComponent(id)+'/preview'};
+  }
+  if(h==='vimeo.com'&&(m=url.pathname.match(/\/(\d+)/))) return {src:'https://player.vimeo.com/video/'+m[1]};
+  if(/\.(mp4|webm|ogg|mov|m4v)$/i.test(url.pathname)) return {src:u,video:true};
+  return null;
+}
+function videoHtml(u){
+  if(!u) return '';
+  const e=embedOf(u);
+  const player=!e?'<p class="text-sm text-slate-600">Link ini belum bisa diputar langsung di sini (didukung: YouTube, Google Drive, Vimeo, file .mp4/.webm).</p>'
+    :e.video?`<video src="${esc(e.src)}" controls playsinline class="w-full rounded-xl bg-black"></video>`
+    :`<div class="aspect-video rounded-xl overflow-hidden bg-black"><iframe src="${esc(e.src)}" class="w-full h-full border-0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" title="Video roleplay"></iframe></div>`;
+  return `<div class="mt-5"><h4 class="font-extrabold mb-2">Video Roleplay</h4>${player}
+    <a href="${esc(u)}" target="_blank" rel="noopener noreferrer" class="inline-block mt-2 text-sm font-bold text-[#1f3a5f] underline">Buka video di tab baru ↗</a>
+    ${/drive\.google\.com/i.test(u)?'<p class="text-xs text-slate-500 mt-1">Kalau video tidak muncul, pastikan akses file Drive diatur ke “Siapa saja yang memiliki link”.</p>':''}</div>`;
+}
 
 /* ---------- Init ---------- */
 $('tanggal').value=new Date().toISOString().slice(0,10);
