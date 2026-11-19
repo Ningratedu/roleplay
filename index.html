@@ -477,6 +477,7 @@ let ROWS=[];
 const BADGE={'Sangat Baik':'bg-emerald-100 text-emerald-800','Baik':'bg-blue-100 text-blue-800','Cukup':'bg-amber-100 text-amber-800','Kurang':'bg-orange-100 text-orange-800','Belum Kompeten':'bg-red-100 text-red-800'};
 const SKOR_BG={1:'bg-red-600',2:'bg-amber-500',3:'bg-blue-600',4:'bg-emerald-600'};
 const tgl=v=>esc(String(v||'').slice(0,10));
+const videoOf=r=>Object.keys(r).filter(k=>/video/i.test(k)).map(k=>String(r[k]||'').trim()).find(v=>/^https?:\/\/\S+$/i.test(v))||'';
 
 async function loadRiwayat(){
   const box=$('riwayat');
@@ -496,18 +497,19 @@ function renderHasil(){
   const avg=rows.length?rows.reduce((a,r)=>a+Number(r['Nilai Akhir']),0)/rows.length:0;
   $('stats').innerHTML=[['Penilaian',rows.length],['Rata-rata nilai',avg.toFixed(1)],['Nilai ≥ 80',rows.filter(r=>Number(r['Nilai Akhir'])>=80).length]]
     .map(x=>`<div class="card p-3"><div class="text-xs text-slate-500">${x[0]}</div><div class="text-2xl font-extrabold tabular-nums">${x[1]}</div></div>`).join('');
-  $('riwayat').innerHTML=rows.length?rows.map(r=>`<button type="button" class="card p-4 text-left flex items-center gap-4 hover:shadow-md" data-id="${esc(r['ID'])}">
+  $('riwayat').innerHTML=rows.length?rows.map(r=>`<div role="button" tabindex="0" class="card p-4 text-left flex items-center gap-4 hover:shadow-md cursor-pointer" data-id="${esc(r['ID'])}">
     <div class="text-3xl font-extrabold tabular-nums shrink-0 ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
     <div class="min-w-0"><div class="font-bold truncate">${esc(r['Nama Sales'])} <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 align-middle">${esc(r['Kategori Sales'])}</span></div>
     <div class="text-xs text-slate-500 truncate">RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])}</div>
     <div class="text-xs text-slate-500 truncate">Spv: ${esc(r['Nama Spv']||'-')}</div>
-    <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span></div></div></button>`).join('')
+    <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span></div>${videoOf(r)?`<a href="${esc(videoOf(r))}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-sm font-semibold hover:bg-blue-100" aria-label="Putar video roleplay ${esc(r['Nama Sales'])}">▶ Putar video</a>`:''}</div></div>`).join('')
     :'<p class="text-slate-500 sm:col-span-2 lg:col-span-3">Tidak ada data yang cocok.</p>';
 }
 ['fCari','fKat','fRM','fHasil'].forEach(id=>$(id).addEventListener('input',renderHasil));
 $('fCariClear').onclick=()=>{ $('fCari').value=''; renderHasil(); $('fCari').focus(); };
 $('btnRefresh').onclick=loadRiwayat;
-$('riwayat').addEventListener('click',e=>{ const b=e.target.closest('[data-id]'); if(b) openDetail(b.dataset.id); });
+$('riwayat').addEventListener('click',e=>{ if(e.target.closest('a')) return; const b=e.target.closest('[data-id]'); if(b) openDetail(b.dataset.id); });
+$('riwayat').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-id]')){ e.preventDefault(); openDetail(e.target.dataset.id); } });
 
 function closeModal(){ $('modal').classList.add('hidden'); document.body.style.overflow=''; }
 $('mdClose').onclick=closeModal;
@@ -517,7 +519,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
 async function openDetail(id){
   const r=ROWS.find(x=>x['ID']===id); if(!r) return;
   const bobot=(SETS[r['Kategori Sales']]||{}).bobot||{};
-  const lv=Object.keys(r).filter(k=>/video/i.test(k)).map(k=>String(r[k]||'').trim()).find(v=>/^https?:\/\/\S+$/i.test(v))||'';
+  const lv=videoOf(r);
   const rekap=Object.keys(ASPEK).filter(k=>bobot[k]).map(k=>`<tr class="border-b last:border-0"><td class="py-2">${ASPEK[k]} <span class="text-xs text-slate-400">${Math.round(bobot[k]*100)}%</span></td><td class="tabular-nums">${Number(r['Rata '+k]).toFixed(2)}</td><td class="text-right font-bold tabular-nums">${Number(r['Nilai '+k]).toFixed(1)}</td></tr>`).join('');
   $('mdBody').innerHTML=`<h3 class="text-lg font-extrabold pr-10">${esc(r['Nama Sales'])}</h3>
     <p class="text-sm text-slate-600">${esc(r['Kategori Sales'])} · ${tgl(r['Tanggal Penilaian'])}<br>RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])} · Spv: ${esc(r['Nama Spv'])}</p>
