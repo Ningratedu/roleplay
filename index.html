@@ -105,9 +105,11 @@
   .hero-logo{width:42px;height:42px;border-radius:12px;flex-shrink:0;background:linear-gradient(135deg,var(--accent-2),var(--blue));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px -4px rgba(23,185,120,.45)}
   .hero h1{margin:0;color:#fff;font-weight:800;font-size:clamp(17px,4.2vw,22px);line-height:1.25}
   .hero p{margin:2px 0 0;color:rgba(255,255,255,.88)!important;font-size:clamp(12px,3vw,14px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .hero-tabs{position:absolute;top:14px;right:16px;display:flex;gap:6px;z-index:1}
-  .hero-tabs button{border-radius:999px!important;padding:7px 16px!important;font-size:13px!important;font-weight:700!important;background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.35);color:#fff!important;backdrop-filter:blur(4px);box-shadow:none}
-  .hero-tabs button.bg-white{background:#fff!important;color:var(--accent-dark)!important;border-color:#fff}
+  /* tab halaman ala referensi: di bawah header, bergaris bawah */
+  .page-tabs{display:flex;gap:18px;margin:16px 0 0;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .page-tab-btn{appearance:none;border:none;background:transparent;color:#445059;font-family:inherit;font-size:13px;font-weight:700;padding:10px 4px 12px;margin-bottom:-1px;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:color .15s,border-color .15s}
+  .page-tab-btn:hover{color:var(--text)}
+  .page-tab-btn.active{color:var(--accent-dark);border-bottom-color:var(--accent)}
   /* tile statistik ala referensi */
   .stat-tile{display:flex;align-items:stretch;background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm);min-height:84px}
   .stat-badge{flex:0 0 72px;display:flex;align-items:center;justify-content:center;background:var(--navy);color:#fff;font-size:19px;font-weight:800;text-align:center;line-height:1.1;padding:8px;font-variant-numeric:tabular-nums}
@@ -131,10 +133,6 @@
 <body>
 <div class="max-w-6xl mx-auto px-4 pt-4">
 <header class="hero">
-  <nav class="hero-tabs">
-    <button id="tabForm" class="px-3 sm:px-4 py-2 rounded-lg bg-white text-[#1f3a5f]">Form</button>
-    <button id="tabRiwayat" class="px-3 sm:px-4 py-2 rounded-lg bg-white/15">Hasil</button>
-  </nav>
   <div class="hero-brand">
     <div class="hero-logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 4.5h6M9 13l2.2 2.2L15.5 11"/></svg></div>
     <div class="min-w-0">
@@ -143,6 +141,10 @@
     </div>
   </div>
 </header>
+<div class="page-tabs" id="pageTabs">
+  <button type="button" id="tabForm" class="page-tab-btn active">📝 Form Penilaian</button>
+  <button type="button" id="tabRiwayat" class="page-tab-btn">📊 Hasil Penilaian</button>
+</div>
 </div>
 
 <div id="navBar" class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b">
@@ -647,8 +649,8 @@ function tab(t){
   const f=t==='form';
   $('viewForm').classList.toggle('hidden',!f); $('viewRiwayat').classList.toggle('hidden',f);
   $('navBar').classList.toggle('hidden',!f); $('bottomBar').classList.toggle('hidden',!f);
-  $('tabForm').className='px-3 sm:px-4 py-2 rounded-lg '+(f?'bg-white text-[#1f3a5f]':'bg-white/15');
-  $('tabRiwayat').className='px-3 sm:px-4 py-2 rounded-lg '+(!f?'bg-white text-[#1f3a5f]':'bg-white/15');
+  $('tabForm').className='page-tab-btn'+(f?' active':'');
+  $('tabRiwayat').className='page-tab-btn'+(!f?' active':'');
   if(!f) loadRiwayat();
 }
 $('tabForm').onclick=()=>tab('form'); $('tabRiwayat').onclick=()=>tab('riwayat');
