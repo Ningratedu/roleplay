@@ -113,6 +113,11 @@
         <p class="text-sm text-slate-600 mb-3">Indikator dengan skor 1 atau 2 muncul otomatis di sini.</p>
         <div id="coaching" class="space-y-4 text-sm"></div>
       </div>
+      <div class="card p-4 sm:p-5 mt-5">
+        <h2 class="font-extrabold text-lg">Catatan Keseluruhan</h2>
+        <p class="text-sm text-slate-600 mb-3">Ringkasan penilaian secara umum: kekuatan, hal yang perlu diperbaiki, dan saran. (opsional)</p>
+        <textarea id="catatanKeseluruhan" rows="4" maxlength="2000" placeholder="Tulis catatan keseluruhan…"></textarea>
+      </div>
     </div>
 
     <aside class="mt-5 lg:mt-0 lg:sticky lg:top-24">
@@ -279,7 +284,7 @@ function loadSet(name){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales','linkVideo'];
+const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales','linkVideo','catatanKeseluruhan'];
 const WARNA_KAT={'Sangat Baik':'text-emerald-600','Baik':'text-blue-600','Cukup':'text-amber-600','Kurang':'text-orange-600','Belum Kompeten':'text-red-600'};
 const coachData={};
 const BM_LIST=['Arief Munandar','Johan Budi Aji','Nal Firdaus','Pupu Hadiningrat','Rendy Dwisakti Saputra','Sintaka Hari Cahyono','Topo Nurochman','Wahyu Rusnanto','Yosfana Kevin Dinasty'];
@@ -438,7 +443,7 @@ async function simpan(){
   }
   const h=hitung(), [kat,rek]=kategori(h.akhir), r2=x=>Math.round(x*100)/100;
   const payload={
-    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),linkVideo:f('linkVideo'),
+    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),linkVideo:f('linkVideo'),catatanKeseluruhan:f('catatanKeseluruhan'),
     rata:Object.fromEntries(Object.entries(h.r).map(([k,v])=>[k,r2(v)])),
     nilai:Object.fromEntries(Object.entries(h.n).map(([k,v])=>[k,r2(v)])),
     nilaiAkhir:r2(h.akhir),kategori:kat,rekomendasi:rek,
@@ -530,6 +535,7 @@ async function openDetail(id){
   const r=ROWS.find(x=>x['ID']===id); if(!r) return;
   const bobot=(SETS[r['Kategori Sales']]||{}).bobot||{};
   const lv=videoOf(r);
+  const catatan=String(r[Object.keys(r).find(k=>/catatan\s*keseluruhan/i.test(k))]||'').trim();
   const rekap=Object.keys(ASPEK).filter(k=>bobot[k]).map(k=>`<tr class="border-b last:border-0"><td class="py-2">${ASPEK[k]} <span class="text-xs text-slate-400">${Math.round(bobot[k]*100)}%</span></td><td class="tabular-nums">${Number(r['Rata '+k]).toFixed(2)}</td><td class="text-right font-bold tabular-nums">${Number(r['Nilai '+k]).toFixed(1)}</td></tr>`).join('');
   $('mdBody').innerHTML=`<h3 class="text-lg font-extrabold pr-10">${esc(r['Nama Sales'])}</h3>
     <p class="text-sm text-slate-600">${esc(r['Kategori Sales'])} · ${tgl(r['Tanggal Penilaian'])}<br>RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])} · Spv: ${esc(r['Nama Spv'])}</p>
@@ -537,6 +543,7 @@ async function openDetail(id){
       <div><div class="font-bold">${esc(r['Kategori'])}</div><div class="text-xs text-slate-600">${esc(r['Rekomendasi'])}</div></div></div>
     ${videoHtml(lv)}
     <table class="w-full text-sm mt-4"><tr class="text-left text-slate-500 text-xs border-b"><th class="py-1.5 font-semibold">Aspek</th><th class="font-semibold">Rata-rata</th><th class="font-semibold text-right">Nilai</th></tr>${rekap}</table>
+    ${catatan?`<div class="mt-4 p-3 rounded-xl bg-slate-50 border"><h4 class="font-extrabold mb-1">Catatan Keseluruhan</h4><p class="text-sm whitespace-pre-line">${esc(catatan)}</p></div>`:''}
     <p id="mdDet" class="text-sm text-slate-500 mt-5">Memuat detail indikator…</p>`;
   $('modal').classList.remove('hidden'); document.body.style.overflow='hidden';
   try{
