@@ -109,7 +109,7 @@
       </div>
       <div id="indikator" class="space-y-5"></div>
       <div class="card p-4 sm:p-5 mt-5">
-        <h2 class="font-extrabold text-lg">Rekomendasi Coaching</h2>
+        <h2 class="font-extrabold text-lg">Rencana Coaching</h2>
         <p class="text-sm text-slate-600 mb-3">Indikator dengan skor 1 atau 2 muncul otomatis di sini.</p>
         <div id="coaching" class="space-y-4 text-sm"></div>
       </div>
@@ -224,7 +224,7 @@ const RB_MAP = {
 const tipOf = (no,s) => { const it=ITEMS[no-1]; if(it&&it.rubrik) return it.rubrik[s-1]; const g=(PANDUAN[curKat]||PANDUAN['Non Gold'])[s]; return g?g.d:''; };
 const ASPEK = {A:'A. Sebelum Membeli', B:'B. Selama Pembangunan', C:'C. Setelah Menjadi Warga', D:'D. Komunikasi & Closing'};
 const SETS = {
- 'Non Gold': {bobot:{A:0.30,B:0.35,C:0.20,D:0.15}, items:[
+ 'Non Gold': {bobot:{A:0.25,B:0.25,C:0.25,D:0.25}, items:[
 ['A','Menjelaskan 30 titik lokasi Rumah Ningrat','Menyampaikan informasi 30 titik lokasi secara jelas; tidak sekadar menyebut angka, tetapi mengaitkannya dengan pilihan lokasi konsumen.'],
 ['A','Menjelaskan kredibilitas dan rekam jejak developer','Menjelaskan identitas/kredibilitas developer sesuai materi dan memberi alasan yang relevan untuk membangun kepercayaan.'],
 ['A','Menjelaskan 3X penghargaan berturut-turut','Menyebutkan penghargaan sebagai bukti pendukung kredibilitas; tidak mengarang nama, kategori, atau tahun penghargaan.'],
@@ -247,7 +247,7 @@ const SETS = {
 ['D','Menangani pertanyaan dan keberatan konsumen','Tidak memotong pembicaraan; menjawab sesuai informasi, mengakui bila perlu konfirmasi, dan tidak membuat janji berlebihan.'],
 ['D','Mengarahkan ke tindak lanjut / closing','Menawarkan langkah konkret seperti cek lokasi, konsultasi unit, atau tindak lanjut sesuai kesiapan konsumen.']
 ]},
- 'Gold': {bobot:{A:0.25,B:0.30,C:0.30,D:0.15}, items:[
+ 'Gold': {bobot:{A:0.25,B:0.25,C:0.25,D:0.25}, items:[
 ['A','Menjelaskan 30 titik lokasi Rumah Ningrat','Menyampaikan informasi 30 titik lokasi sesuai materi; mengaitkannya dengan pilihan lokasi dan kebutuhan konsumen tanpa melebih-lebihkan.'],
 ['A','Menjelaskan kredibilitas dan rekam jejak developer','Menjelaskan kredibilitas developer dengan bahasa sederhana dan menggunakan informasi yang tersedia sebagai dasar membangun kepercayaan.'],
 ['A','Menjelaskan 3X penghargaan berturut-turut','Menyampaikan penghargaan sebagai bukti pendukung kredibilitas; tidak mengarang nama, kategori, atau tahun penghargaan.'],
@@ -294,8 +294,8 @@ function syncMan(){ ['namaBM','namaSpv'].forEach(id=>$(id+'Txt').classList.toggl
 const gv=id=>$(id).value==='__manual'?$(id+'Txt').value.trim():$(id).value;
 
 
-function kategori(n){
-  const g=curKat==='Gold';
+function kategori(n,kat=curKat){
+  const g=kat==='Gold';
   if(n>=90) return ['Sangat Baik',g?'Siap praktik lapangan; tetap mengikuti ketentuan dan informasi resmi program.':'Siap praktik lapangan; tetap mengikuti standar dan ketentuan program.'];
   if(n>=80) return ['Baik',g?'Siap praktik dengan coaching ringan.':'Siap praktik dengan sedikit evaluasi dan coaching ringan.'];
   if(n>=70) return ['Cukup',g?'Perlu penguatan indikator dengan skor rendah.':'Perlu penguatan pada indikator dengan skor rendah.'];
@@ -479,13 +479,24 @@ const SKOR_BG={1:'bg-red-600',2:'bg-amber-500',3:'bg-blue-600',4:'bg-emerald-600
 const tgl=v=>esc(String(v||'').slice(0,10));
 const videoOf=r=>Object.keys(r).filter(k=>/video/i.test(k)).map(k=>String(r[k]||'').trim()).find(v=>/^https?:\/\/\S+$/i.test(v))||'';
 
+/* Hitung ulang nilai akhir & kategori memakai bobot terbaru (berlaku juga untuk data lama) */
+function hitungUlang(r){
+  const b=(SETS[r['Kategori Sales']]||{}).bobot; if(!b) return;
+  let akhir=0;
+  for(const k of Object.keys(b)){
+    const v=r['Rata '+k]; if(v===''||v==null||!isFinite(Number(v))) return;
+    const n=Number(v)/4*100; r['Nilai '+k]=n; akhir+=n*b[k];
+  }
+  const [kat,rek]=kategori(akhir,r['Kategori Sales']);
+  r['Nilai Akhir']=Math.round(akhir*100)/100; r['Kategori']=kat; r['Rekomendasi']=rek;
+}
 async function loadRiwayat(){
   const box=$('riwayat');
   if(!API_URL){ box.innerHTML='<p class="text-slate-500">API_URL belum diisi.</p>'; return; }
   box.innerHTML='<p class="text-slate-500">Memuat…</p>';
   try{
     const j=await (await fetch(API_URL+'?action=list')).json(); if(!j.ok) throw new Error(j.error);
-    ROWS=j.rows; renderHasil();
+    ROWS=j.rows; ROWS.forEach(hitungUlang); renderHasil();
   }catch(err){ $('stats').innerHTML=''; box.innerHTML=`<p class="text-red-600">Gagal memuat: ${esc(err.message)}</p>`; }
 }
 function renderHasil(){
@@ -549,7 +560,7 @@ async function openDetail(id){
     });
     if(open) out+='</tbody></table></div>';
     if((j.coaching||[]).length){
-      out+='<h4 class="font-extrabold mt-5 mb-1">Rekomendasi Coaching</h4>'+j.coaching.map(c=>`<div class="border rounded-xl p-3 mb-2 text-sm"><div class="font-semibold">${esc(c['Indikator'])}</div>
+      out+='<h4 class="font-extrabold mt-5 mb-1">Rencana Coaching</h4>'+j.coaching.map(c=>`<div class="border rounded-xl p-3 mb-2 text-sm"><div class="font-semibold">${esc(c['Indikator'])}</div>
         ${c['Temuan']?`<div class="text-slate-600">Temuan: ${esc(c['Temuan'])}</div>`:''}
         ${c['Aksi Coaching']?`<div class="text-slate-600">Aksi: ${esc(c['Aksi Coaching'])}</div>`:''}
         ${c['Target Perilaku']?`<div class="text-slate-600">Target: ${esc(c['Target Perilaku'])}</div>`:''}
