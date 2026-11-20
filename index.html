@@ -110,6 +110,9 @@
   .page-tab-btn{appearance:none;border:none;background:transparent;color:#445059;font-family:inherit;font-size:13px;font-weight:700;padding:10px 4px 12px;margin-bottom:-1px;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:color .15s,border-color .15s}
   .page-tab-btn:hover{color:var(--text)}
   .page-tab-btn.active{color:var(--accent-dark);border-bottom-color:var(--accent)}
+  /* penanda perlu diulang di card hasil */
+  .card.ulang{border-left:5px solid #e0a02c;background:linear-gradient(90deg,#fff6e3,#fff 55%)}
+  .badge-ulang{display:inline-flex;align-items:center;gap:3px;margin:2px 0;padding:1px 8px;border-radius:999px;font-size:9.5px;line-height:1.5;font-weight:700;letter-spacing:.1px;white-space:nowrap;background:#f6c453;color:#5c3a00}
   /* tile statistik ala referensi */
   .stat-tile{display:flex;align-items:stretch;background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm);min-height:84px}
   .stat-badge{flex:0 0 72px;display:flex;align-items:center;justify-content:center;background:var(--navy);color:#fff;font-size:19px;font-weight:800;text-align:center;line-height:1.1;padding:8px;font-variant-numeric:tabular-nums}
@@ -142,8 +145,8 @@
   </div>
 </header>
 <div class="page-tabs" id="pageTabs">
-  <button type="button" id="tabRiwayat" class="page-tab-btn">📊 Hasil Penilaian</button>
-  <button type="button" id="tabForm" class="page-tab-btn active">📝 Form Penilaian</button>
+  <button type="button" id="tabRiwayat" class="page-tab-btn active">📊 Hasil Penilaian</button>
+  <button type="button" id="tabForm" class="page-tab-btn">📝 Form Penilaian</button>
 </div>
 </div>
 
@@ -165,6 +168,7 @@
    <div class="lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 items-start">
     <div class="min-w-0">
       <div class="card p-4 sm:p-5 mb-5 grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        <label class="text-sm font-semibold sm:col-span-2 xl:col-span-3">Penilaian ulang <span class="font-normal text-slate-500">(pilih sales yang perlu diulang, data lain terisi otomatis)</span><select id="pilihUlang"><option value="">— Penilaian baru —</option></select></label>
         <label class="text-sm font-semibold">Nama Sales<input id="namaSales" autocomplete="off"></label>
         <label class="text-sm font-semibold">Nama RM
           <select id="namaRM"><option value="">Pilih RM</option><option>Irfannudin</option><option>Ade Himawan Mukti</option><option>Faizal Annur</option></select></label>
@@ -175,6 +179,7 @@
           <select id="kategoriSales"><option value="">Pilih kategori</option><option>Gold</option><option>Non Gold</option></select></label>
         <label class="text-sm font-semibold sm:col-span-2 xl:col-span-3">Link Video Roleplay <span class="font-normal text-slate-500">(opsional)</span><input id="linkVideo" type="url" inputmode="url" placeholder="https://drive.google.com/… atau link YouTube" autocomplete="off"></label>
       </div>
+      <div id="ulangInfo" class="hidden mb-5 p-4 rounded-xl border text-sm" style="background:#fdf3e0;border-color:#f0dba8;color:#5c3a00"></div>
       <div id="indikator" class="space-y-5"></div>
       <div class="card p-4 sm:p-5 mt-5">
         <h2 class="font-extrabold text-lg">Rencana Coaching</h2>
@@ -185,6 +190,17 @@
         <h2 class="font-extrabold text-lg">Catatan Keseluruhan</h2>
         <p class="text-sm text-slate-600 mb-3">Ringkasan penilaian secara umum: kekuatan, hal yang perlu diperbaiki, dan saran. (opsional)</p>
         <textarea id="catatanKeseluruhan" rows="4" maxlength="2000" placeholder="Tulis catatan keseluruhan…"></textarea>
+      </div>
+      <div class="card p-4 sm:p-5 mt-5">
+        <h2 class="font-extrabold text-lg">Status Roleplay</h2>
+        <p class="text-sm text-slate-600 mb-3">Tandai kalau sales perlu mengulang roleplay, lalu tuliskan alasannya. Saat sales sudah mengulang, buat penilaian baru dengan nama sales &amp; kategori yang sama: otomatis tercatat sebagai penilaian ke-2 dst, dan status “Perlu diulang” berubah jadi “Sudah diulang”.</p>
+        <label class="text-sm font-semibold">Perlu diulang?
+          <select id="statusUlang"><option value="">Tidak perlu diulang</option><option value="Ya">Ya, perlu diulang</option></select></label>
+        <p id="autoUlangNote" class="hidden text-xs mt-1" style="color:#8a5200">Otomatis: kategori Belum Kompeten wajib mengulang roleplay.</p>
+        <div id="alasanWrap" class="hidden mt-3">
+          <label class="text-sm font-semibold">Alasan perlu diulang <span class="text-red-600">*</span>
+            <textarea id="alasanUlang" rows="3" maxlength="1000" placeholder="Contoh: materi belum dikuasai, perlu latihan menjawab keberatan konsumen…"></textarea></label>
+        </div>
       </div>
     </div>
 
@@ -218,9 +234,10 @@
       <select id="fKat"><option value="">Semua kategori</option><option>Gold</option><option>Non Gold</option></select>
       <select id="fRM"><option value="">Semua RM</option><option>Irfannudin</option><option>Ade Himawan Mukti</option><option>Faizal Annur</option></select>
       <select id="fHasil"><option value="">Semua hasil</option><option>Sangat Baik</option><option>Baik</option><option>Cukup</option><option>Kurang</option><option>Belum Kompeten</option></select>
+      <select id="fUlang"><option value="">Semua status</option><option value="ya">🔁 Menunggu diulang</option><option value="sudah">✅ Sudah diulang</option><option value="tidak">Tidak perlu diulang</option></select>
     </div>
     <div id="stats" class="grid grid-cols-3 gap-2 sm:gap-4 mb-4"></div>
-    <div id="riwayat" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    <div id="riwayat" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
   </section>
 </main>
 
@@ -352,7 +369,7 @@ function loadSet(name){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales','linkVideo','catatanKeseluruhan'];
+const KEY='rp_draft_v1', IDS=['namaSales','namaRM','namaBM','namaBMTxt','namaSpv','namaSpvTxt','tanggal','kategoriSales','linkVideo','catatanKeseluruhan','statusUlang','alasanUlang'];
 const WARNA_KAT={'Sangat Baik':'text-emerald-600','Baik':'text-blue-600','Cukup':'text-amber-600','Kurang':'text-orange-600','Belum Kompeten':'text-red-600'};
 const coachData={};
 const BM_LIST=['Arief Munandar','Johan Budi Aji','Nal Firdaus','Pupu Hadiningrat','Rendy Dwisakti Saputra','Sintaka Hari Cahyono','Topo Nurochman','Wahyu Rusnanto','Yosfana Kevin Dinasty'];
@@ -363,7 +380,8 @@ function fillMan(){
     $(id).addEventListener('change',()=>{ syncMan(); if($(id).value==='__manual') $(id+'Txt').focus(); });
   });
 }
-function syncMan(){ ['namaBM','namaSpv'].forEach(id=>$(id+'Txt').classList.toggle('hidden',$(id).value!=='__manual')); }
+function syncMan(){ ['namaBM','namaSpv'].forEach(id=>$(id+'Txt').classList.toggle('hidden',$(id).value!=='__manual')); $('alasanWrap').classList.toggle('hidden',$('statusUlang').value!=='Ya'); }
+$('statusUlang').addEventListener('change',()=>{ syncMan(); if($('statusUlang').value==='Ya') $('alasanUlang').focus(); });
 const gv=id=>$(id).value==='__manual'?$(id+'Txt').value.trim():$(id).value;
 
 
@@ -381,7 +399,7 @@ let t0;
 function persist(){
   clearTimeout(t0);
   t0=setTimeout(()=>{ try{
-    localStorage.setItem(KEY,JSON.stringify({f:Object.fromEntries(IDS.map(i=>[i,$(i).value])),it:ITEMS.map(i=>[i.skor,i.catatan,i.tindak]),c:coachData}));
+    localStorage.setItem(KEY,JSON.stringify({f:Object.fromEntries(IDS.map(i=>[i,$(i).value])),it:ITEMS.map(i=>[i.skor,i.catatan,i.tindak]),c:coachData,u:ULANG_ID}));
   }catch(e){} },400);
 }
 function restore(){
@@ -390,7 +408,7 @@ function restore(){
     IDS.forEach(i=>{ if(d.f&&d.f[i]) $(i).value=d.f[i]; });
     syncMan(); loadSet($('kategoriSales').value);
     if((d.it||[]).length===ITEMS.length) d.it.forEach((x,i)=>{ if(ITEMS[i]){ITEMS[i].skor=x[0]||0;ITEMS[i].catatan=x[1]||'';ITEMS[i].tindak=x[2]||'';} });
-    Object.assign(coachData,d.c||{});
+    Object.assign(coachData,d.c||{}); ULANG_ID=d.u||'';
     return ITEMS.some(i=>i.skor||i.catatan||i.tindak)||!!(d.f&&d.f.namaSales);
   }catch(e){ return false; }
 }
@@ -406,6 +424,7 @@ function renderItems(){
       const filled=(i.catatan||i.tindak)?' •':'';
       h+=`<div class="py-4"><div class="item ${i.skor?'d'+i.skor:''}" id="it${i.no}">
       <div class="font-bold leading-snug">${i.no}. ${esc(i.indikator)}</div>
+      ${PREV[i.no]?`<div class="mt-1"><span class="text-xs font-bold px-2 py-0.5 rounded ${PREV[i.no]<=2?'bg-amber-100 text-amber-800':'bg-slate-100 text-slate-600'}">Penilaian sebelumnya: skor ${PREV[i.no]}${PREV[i.no]<=2?' · fokus perbaikan':''}</span></div>`:''}
       <p class="text-sm text-slate-600 mt-1">${esc(i.panduan)}</p>
       <div class="grid grid-cols-4 gap-2 mt-3 max-w-xl">${[1,2,3,4].map(s=>`<button type="button" class="skor${i.skor===s?' on-'+s:''}" data-no="${i.no}" data-s="${s}" aria-label="Skor ${s} ${LABEL[s]}. ${esc(tipOf(i.no,s))}"><span class="text-lg">${s}</span><span class="hidden sm:block text-[11px] font-medium mt-1">${LABEL[s]}</span></button>`).join('')}</div>
       <div class="text-xs text-slate-500 mt-1.5 sm:hidden" id="lbl${i.no}">${i.skor?i.skor+' – '+LABEL[i.skor]:'Belum dinilai'}</div>
@@ -431,6 +450,21 @@ function hitung(){
   return {r,n,akhir};
 }
 
+let AUTO_ALASAN='';
+function alasanAuto(n,low){ return 'Belum Kompeten'+(isFinite(n)?' (nilai '+Number(n).toFixed(1)+', di bawah 60)':'')+'.'+(low&&low.length?' Indikator skor rendah: no. '+low.join(', ')+'.':''); }
+function autoUlang(lengkap,kat,akhir){
+  const sel=$('statusUlang'), al=$('alasanUlang'), note=$('autoUlangNote');
+  if(lengkap&&kat==='Belum Kompeten'){
+    const txt=alasanAuto(akhir,ITEMS.filter(i=>i.skor<=2).map(i=>i.no));
+    if(!al.value.trim()||al.value===AUTO_ALASAN) al.value=txt;
+    AUTO_ALASAN=txt; sel.value='Ya'; sel.disabled=true; note.classList.remove('hidden');
+  } else if(sel.disabled){
+    sel.disabled=false; note.classList.add('hidden');
+    if(al.value===AUTO_ALASAN){ al.value=''; sel.value=''; }
+    AUTO_ALASAN='';
+  }
+  syncMan();
+}
 function renderRekap(){
   const h=hitung(), done=ITEMS.filter(i=>i.skor).length, total=ITEMS.length;
   $('bar').style.width=(total?done/total*100:0)+'%';
@@ -446,7 +480,9 @@ function renderRekap(){
   if(lengkap){
     const [kat,rek]=kategori(h.akhir);
     $('kategori').textContent=kat; $('kategori').className='font-bold '+(WARNA_KAT[kat]||''); $('rekom').textContent=rek;
+    autoUlang(true,kat,h.akhir);
   } else {
+    autoUlang(false,'',0);
     $('kategori').textContent=total?'Nilai sementara':'Pilih kategori dulu'; $('kategori').className='font-bold text-slate-700';
     $('rekom').textContent=total?`Sisa ${total-done} indikator belum dinilai.`:'';
   }
@@ -503,6 +539,7 @@ async function simpan(){
     if(!f(id)){ $(id).scrollIntoView({block:'center'}); $(id).focus(); toast('Nama sales, RM, tanggal penilaian, dan kategori wajib diisi.',false); return; }
   }
   if(f('linkVideo') && !/^https?:\/\/\S+$/i.test(f('linkVideo'))){ $('linkVideo').scrollIntoView({block:'center'}); $('linkVideo').focus(); toast('Link video harus diawali http:// atau https://',false); return; }
+  if(f('statusUlang')==='Ya' && !f('alasanUlang')){ $('alasanWrap').scrollIntoView({block:'center'}); $('alasanUlang').focus(); toast('Isi alasan kenapa roleplay perlu diulang.',false); return; }
   const first=ITEMS.find(i=>!i.skor);
   if(first){
     ITEMS.filter(i=>!i.skor).forEach(i=>$('it'+i.no).classList.add('miss'));
@@ -510,8 +547,9 @@ async function simpan(){
     toast(`Masih ${ITEMS.filter(i=>!i.skor).length} indikator belum dinilai.`,false); return;
   }
   const h=hitung(), [kat,rek]=kategori(h.akhir), r2=x=>Math.round(x*100)/100;
+  const ulangYa=f('statusUlang')==='Ya'||kat==='Belum Kompeten';
   const payload={
-    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),linkVideo:f('linkVideo'),catatanKeseluruhan:f('catatanKeseluruhan'),
+    namaSales:f('namaSales'),namaRM:f('namaRM'),namaBM:gv('namaBM'),namaSpv:gv('namaSpv'),tanggal:f('tanggal'),kategoriSales:f('kategoriSales'),ulangDariId:ULANG_ID,linkVideo:f('linkVideo'),catatanKeseluruhan:f('catatanKeseluruhan'),perluDiulang:ulangYa?'Ya':'Tidak',alasanUlang:ulangYa?(f('alasanUlang')||alasanAuto(h.akhir,ITEMS.filter(i=>i.skor<=2).map(i=>i.no))):'',
     rata:Object.fromEntries(Object.entries(h.r).map(([k,v])=>[k,r2(v)])),
     nilai:Object.fromEntries(Object.entries(h.n).map(([k,v])=>[k,r2(v)])),
     nilaiAkhir:r2(h.akhir),kategori:kat,rekomendasi:rek,
@@ -522,7 +560,7 @@ async function simpan(){
   try{
     const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
     const j=await res.json(); if(!j.ok) throw new Error(j.error||'Gagal menyimpan');
-    clearDraft(); setStatus('Tersimpan. ID: '+j.id,true);
+    clearDraft(); setStatus('Tersimpan. ID: '+j.id,true); ULANG_ID=''; fetchRows().then(populateUlang).catch(()=>{});
     toast('Penilaian berhasil disimpan.',true,['Penilaian baru',()=>resetAll(true)]);
   }catch(err){ setStatus('Gagal: '+err.message,false); toast('Gagal menyimpan: '+err.message,false); }
   busy(false);
@@ -535,7 +573,7 @@ function resetAll(skip){
   Object.keys(coachData).forEach(k=>delete coachData[k]);
   IDS.forEach(i=>$(i).value=''); loadSet(''); syncMan(); $('tanggal').value=new Date().toISOString().slice(0,10);
   clearDraft(); $('draftInfo').classList.add('hidden'); setStatus('',true);
-  renderItems(); renderRekap(); renderCoaching(); window.scrollTo(0,0);
+  ULANG_ID=''; PREV={}; prevId=''; lockUlang(false); $('pilihUlang').value=''; $('ulangInfo').classList.add('hidden'); renderItems(); renderRekap(); renderCoaching(); window.scrollTo(0,0);
 }
 $('btnReset').onclick=()=>resetAll();
 $('kategoriSales').addEventListener('change',()=>{
@@ -552,6 +590,7 @@ const SKOR_BG={1:'bg-red-600',2:'bg-amber-500',3:'bg-blue-600',4:'bg-emerald-600
 const tgl=v=>esc(String(v||'').slice(0,10));
 const videoOf=r=>Object.keys(r).filter(k=>/video/i.test(k)).map(k=>String(r[k]||'').trim()).find(v=>/^https?:\/\/\S+$/i.test(v))||'';
 const catatanOf=r=>{ const k=Object.keys(r).find(k=>/catatan\s*keseluruhan/i.test(k)); return k?String(r[k]||'').trim():''; };
+const ulangOf=r=>{ const kv=Object.keys(r).find(k=>/perlu\s*diulang/i.test(k)), ka=Object.keys(r).find(k=>/alasan\s*diulang/i.test(k)); const ya0=/^ya$/i.test(String(kv?r[kv]:'').trim()), a0=ka?String(r[ka]||'').trim():'', bk=r['Kategori']==='Belum Kompeten'; return {ya:ya0||bk,alasan:a0||(bk?alasanAuto(Number(r['Nilai Akhir']),[]):'')}; };
 
 /* Hitung ulang nilai akhir & kategori memakai bobot terbaru (berlaku juga untuk data lama) */
 function hitungUlang(r){
@@ -564,33 +603,105 @@ function hitungUlang(r){
   const [kat,rek]=kategori(akhir,r['Kategori Sales']);
   r['Nilai Akhir']=Math.round(akhir*100)/100; r['Kategori']=kat; r['Rekomendasi']=rek;
 }
+
+/* ---------- Alur penilaian ulang (berbasis ID, tersimpan di sheet) ---------- */
+let PREV={}, prevId='', ULANG_ID='';
+async function fetchRows(){ const j=await (await fetch(API_URL+'?action=list')).json(); if(!j.ok) throw new Error(j.error); ROWS=j.rows; ROWS.forEach(hitungUlang); }
+const U=(r,k)=>String(r[k]||'').trim();
+const rowById=id=>ROWS.find(r=>r['ID']===id);
+const nilaiTxt=r=>Number(r['Nilai Akhir']).toFixed(1);
+function chainOf(r){
+  let a=r, g=0; while(U(a,'Ulang Dari ID')&&rowById(U(a,'Ulang Dari ID'))&&g++<20) a=rowById(U(a,'Ulang Dari ID'));
+  const c=[a]; g=0; while(U(a,'Diulang Oleh ID')&&rowById(U(a,'Diulang Oleh ID'))&&g++<20){ a=rowById(U(a,'Diulang Oleh ID')); c.push(a); }
+  return c;
+}
+function infoUlang(r){ const c=chainOf(r), i=c.findIndex(x=>x['ID']===r['ID']), u=ulangOf(r); return {c,i,ke:i+1,awal:c[0],prev:i>0?c[i-1]:null,next:i>=0&&i<c.length-1?c[i+1]:null,ya:u.ya,alasan:u.alasan}; }
+const statusOf=r=>{ const x=infoUlang(r); return !x.ya?'tidak':(x.next?'sudah':'ya'); };
+const deltaTxt=(r,b)=>{ const d=Number(r['Nilai Akhir'])-Number(b['Nilai Akhir']); return (d>=0?'▲ +':'▼ ')+d.toFixed(1); };
+function badgeUlang(r){
+  const x=infoUlang(r), s=statusOf(r); let h='';
+  if(s==='ya') h+=`<div class="flex items-center gap-2"><span class="badge-ulang shrink-0">🔁 PERLU DIULANG</span>${x.alasan?`<span class="italic text-slate-500 min-w-0" style="font-size:10px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="${esc(x.alasan)}">${esc(x.alasan)}</span>`:''}</div>`;
+  else if(s==='sudah') h+=`<div><span class="badge-ulang" style="background:#d1fae5;color:#065f46">✅ SUDAH DIULANG · hasil ${nilaiTxt(x.next)}</span></div>`;
+  if(x.ke>1) h+=`<div class="text-xs font-bold text-[#1f3a5f]">Ulang ke-${x.ke-1} · nilai awal ${nilaiTxt(x.awal)} → ${nilaiTxt(r)} (${deltaTxt(r,x.awal)})</div>`;
+  return h;
+}
+function blokUlang(r){
+  const x=infoUlang(r); let h='';
+  if(x.ya) h+=`<div class="mt-3 p-3 rounded-xl border" style="background:${x.next?'#ecfdf5':'#fdf3e0'};border-color:${x.next?'#a7f3d0':'#f0dba8'}"><div class="font-extrabold" style="color:${x.next?'#065f46':'#8a5200'}">${x.next?'✅ Sudah diulang':'🔁 Perlu diulang'}</div><p class="text-sm whitespace-pre-line mt-1">Alasan: ${esc(x.alasan||'-')}</p></div>`;
+  if(x.c.length>1){
+    const last=x.c[x.c.length-1];
+    h+=`<div class="mt-3 p-3 rounded-xl border bg-slate-50"><div class="font-extrabold mb-1">Riwayat penilaian ${esc(r['Nama Sales'])}</div><div class="text-xs text-slate-600 mb-2">Nilai awal ${nilaiTxt(x.awal)} → terbaru ${nilaiTxt(last)} (${deltaTxt(last,x.awal)}). Ketuk baris untuk melihat detailnya.</div>`
+    +x.c.map((q,n)=>`<button type="button" onclick="openDetail('${esc(q['ID'])}')" class="w-full text-left flex items-center justify-between gap-2 py-1.5 border-t text-sm ${q['ID']===r['ID']?'font-bold':''}"><span>${n===0?'Awal':'Ulang ke-'+n} · ${tgl(q['Tanggal Penilaian'])}${q['ID']===r['ID']?' (ini)':''}${n===x.c.length-1&&n>0?' · <span class="text-emerald-700">terbaru</span>':''}</span><span class="tabular-nums ${WARNA_KAT[q['Kategori']]||''}">${nilaiTxt(q)} · ${esc(q['Kategori'])}</span></button>`).join('')+'</div>';
+  }
+  return h;
+}
+/* dropdown "perlu diulang" di form */
+function setSel(id,val){ const el=$(id); if([...el.options].some(o=>o.value===val&&val)){ el.value=val; $(id+'Txt').value=''; } else if(val){ el.value='__manual'; $(id+'Txt').value=val; } else el.value=''; }
+function lockUlang(on){ $('namaSales').readOnly=on; $('kategoriSales').disabled=on; }
+async function tampilUlang(){
+  const box=$('ulangInfo'), r=rowById(ULANG_ID);
+  if(!r){ box.classList.add('hidden'); if(prevId){ PREV={}; prevId=''; renderItems(); } return; }
+  const x=infoUlang(r), u=ulangOf(r);
+  box.innerHTML=`<div class="font-extrabold mb-1">🔁 Penilaian ulang ke-${x.ke} untuk ${esc(r['Nama Sales'])} (${esc(r['Kategori Sales'])})</div>Nilai ${x.ke>1?'terakhir':'awal'} (${tgl(r['Tanggal Penilaian'])}): <b>${nilaiTxt(r)}</b> · ${esc(r['Kategori'])}.<br>Alasan diulang: ${esc(u.alasan||'-')}<br><span class="text-xs">Nilai awal tetap tersimpan dan bisa dilihat di tab Hasil. Skor sebelumnya muncul di tiap indikator.</span>`;
+  box.classList.remove('hidden');
+  if(prevId!==r['ID']){
+    prevId=r['ID']; PREV={};
+    try{ const j=await (await fetch(API_URL+'?action=detail&id='+encodeURIComponent(r['ID']))).json(); if(j.ok&&prevId===r['ID']) (j.rows||[]).forEach(d=>{ PREV[Number(d['No'])]=Number(d['Skor']); }); }catch(e){}
+    renderItems();
+  }
+}
+function applyUlang(id,fill){
+  const before=ULANG_ID;
+  if(fill && ITEMS.some(i=>i.skor) && !confirm('Skor yang sudah diisi akan dikosongkan. Lanjut?')){ $('pilihUlang').value=before; return; }
+  ULANG_ID=id||'';
+  const r=rowById(ULANG_ID);
+  if(fill){
+    Object.keys(coachData).forEach(k=>delete coachData[k]);
+    if(r){
+      $('namaSales').value=r['Nama Sales']||''; $('namaRM').value=r['Nama RM']||''; setSel('namaBM',r['Nama BM']||''); setSel('namaSpv',r['Nama Spv']||'');
+      $('kategoriSales').value=r['Kategori Sales']||''; loadSet($('kategoriSales').value);
+    } else { $('namaSales').value=''; $('kategoriSales').value=''; loadSet(''); }
+    ['linkVideo','catatanKeseluruhan','statusUlang','alasanUlang'].forEach(k=>$(k).value=''); $('tanggal').value=new Date().toISOString().slice(0,10); syncMan();
+    PREV={}; prevId='';
+  }
+  lockUlang(!!r);
+  renderItems(); renderRekap(); renderCoaching(); tampilUlang(); persist();
+}
+function populateUlang(){
+  const sel=$('pilihUlang');
+  const pend=ROWS.filter(r=>statusOf(r)==='ya').sort((a,b)=>String(b['Timestamp']).localeCompare(String(a['Timestamp'])));
+  sel.innerHTML='<option value="">— Penilaian baru —</option>'+pend.map(r=>`<option value="${esc(r['ID'])}">${esc(r['Nama Sales'])} (perlu diulang) · ${esc(r['Kategori Sales'])} · ${tgl(r['Tanggal Penilaian'])}</option>`).join('');
+  if(ULANG_ID && !pend.some(r=>r['ID']===ULANG_ID)) ULANG_ID='';
+  sel.value=ULANG_ID; lockUlang(!!ULANG_ID); tampilUlang();
+}
+$('pilihUlang').addEventListener('change',()=>applyUlang($('pilihUlang').value,true));
 async function loadRiwayat(){
   const box=$('riwayat');
   if(!API_URL){ box.innerHTML='<p class="text-slate-500">API_URL belum diisi.</p>'; return; }
   box.innerHTML='<p class="text-slate-500">Memuat…</p>';
   try{
-    const j=await (await fetch(API_URL+'?action=list')).json(); if(!j.ok) throw new Error(j.error);
-    ROWS=j.rows; ROWS.forEach(hitungUlang); renderHasil();
+    await fetchRows(); populateUlang(); renderHasil();
   }catch(err){ $('stats').innerHTML=''; box.innerHTML=`<p class="text-red-600">Gagal memuat: ${esc(err.message)}</p>`; }
 }
 function renderHasil(){
-  const q=$('fCari').value.trim().toLowerCase(), fk=$('fKat').value, fr=$('fRM').value, fh=$('fHasil').value;
+  const q=$('fCari').value.trim().toLowerCase(), fk=$('fKat').value, fr=$('fRM').value, fh=$('fHasil').value, fu=$('fUlang').value;
   $('fCariClear').classList.toggle('hidden',!q);
   const words=q.split(/\s+/).filter(Boolean);
-  const hay=r=>['Nama Sales','Nama RM','Nama BM','Nama Spv','Kategori Sales','Kategori','Tanggal Penilaian'].map(k=>k==='Tanggal Penilaian'?String(r[k]||'').slice(0,10):String(r[k]??'')).join(' ').toLowerCase();
-  const rows=ROWS.filter(r=>(!words.length||words.every(w=>hay(r).includes(w)))&&(!fk||r['Kategori Sales']===fk)&&(!fr||r['Nama RM']===fr)&&(!fh||r['Kategori']===fh));
+  const hay=r=>(['Nama Sales','Nama RM','Nama BM','Nama Spv','Kategori Sales','Kategori','Tanggal Penilaian'].map(k=>k==='Tanggal Penilaian'?String(r[k]||'').slice(0,10):String(r[k]??'')).join(' ')+(ulangOf(r).ya?' perlu diulang '+ulangOf(r).alasan:'')).toLowerCase();
+  const rows=ROWS.filter(r=>(!words.length||words.every(w=>hay(r).includes(w)))&&(!fk||r['Kategori Sales']===fk)&&(!fr||r['Nama RM']===fr)&&(!fh||r['Kategori']===fh)&&(!fu||statusOf(r)===fu));
   const avg=rows.length?rows.reduce((a,r)=>a+Number(r['Nilai Akhir']),0)/rows.length:0;
   $('stats').innerHTML=[['Penilaian',rows.length,'total data'],['Rata-rata nilai',avg.toFixed(1),'nilai akhir'],['Nilai ≥ 80',rows.filter(r=>Number(r['Nilai Akhir'])>=80).length,'Baik ke atas']]
     .map(x=>`<div class="stat-tile"><div class="stat-badge">${x[1]}</div><div class="stat-info"><div class="stat-title">${x[0]}</div><div class="stat-sub">${x[2]}</div></div></div>`).join('');
-  $('riwayat').innerHTML=rows.length?rows.map(r=>`<button type="button" class="card p-4 text-left flex items-center gap-4 hover:shadow-md" data-id="${esc(r['ID'])}">
+  $('riwayat').innerHTML=rows.length?rows.map(r=>`<button type="button" class="card p-4 text-left flex items-center gap-4 min-w-0 w-full hover:shadow-md${statusOf(r)==='ya'?' ulang':''}" data-id="${esc(r['ID'])}">
     <div class="text-3xl font-extrabold tabular-nums shrink-0 ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
-    <div class="min-w-0"><div class="font-bold truncate">${esc(r['Nama Sales'])} <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 align-middle">${esc(r['Kategori Sales'])}</span></div>
+    <div class="min-w-0"><div class="font-bold flex items-center gap-1.5 min-w-0"><span class="truncate">${esc(r['Nama Sales'])}</span><span class="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 shrink-0">${esc(r['Kategori Sales'])}</span></div>
+    ${badgeUlang(r)}
     <div class="text-xs text-slate-500 truncate">RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])}</div>
     <div class="text-xs text-slate-500 truncate">Spv: ${esc(r['Nama Spv']||'-')}</div>
     <div class="text-xs text-slate-500 truncate">${tgl(r['Tanggal Penilaian'])} · <span class="font-bold px-1.5 py-0.5 rounded ${BADGE[r['Kategori']]||''}">${esc(r['Kategori'])}</span>${videoOf(r)?' · <span class="font-semibold text-[#1f3a5f]">▶ Video</span>':''}</div>${catatanOf(r)?`<div class="italic text-slate-500 mt-1" style="font-size:10.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">“${esc(catatanOf(r))}”</div>`:''}</div></button>`).join('')
     :'<p class="text-slate-500 sm:col-span-2 lg:col-span-3">Tidak ada data yang cocok.</p>';
 }
-['fCari','fKat','fRM','fHasil'].forEach(id=>$(id).addEventListener('input',renderHasil));
+['fCari','fKat','fRM','fHasil','fUlang'].forEach(id=>$(id).addEventListener('input',renderHasil));
 $('fCariClear').onclick=()=>{ $('fCari').value=''; renderHasil(); $('fCari').focus(); };
 $('btnRefresh').onclick=loadRiwayat;
 $('riwayat').addEventListener('click',e=>{ const b=e.target.closest('[data-id]'); if(b) openDetail(b.dataset.id); });
@@ -604,12 +715,13 @@ async function openDetail(id){
   const r=ROWS.find(x=>x['ID']===id); if(!r) return;
   const bobot=(SETS[r['Kategori Sales']]||{}).bobot||{};
   const lv=videoOf(r);
-  const catatan=catatanOf(r);
+  const catatan=catatanOf(r), ul=ulangOf(r);
   const rekap=Object.keys(ASPEK).filter(k=>bobot[k]).map(k=>`<tr class="border-b last:border-0"><td class="py-2">${ASPEK[k]} <span class="text-xs text-slate-400">${Math.round(bobot[k]*100)}%</span></td><td class="tabular-nums">${Number(r['Rata '+k]).toFixed(2)}</td><td class="text-right font-bold tabular-nums">${Number(r['Nilai '+k]).toFixed(1)}</td></tr>`).join('');
   $('mdBody').innerHTML=`<h3 class="text-lg font-extrabold pr-10">${esc(r['Nama Sales'])}</h3>
     <p class="text-sm text-slate-600">${esc(r['Kategori Sales'])} · ${tgl(r['Tanggal Penilaian'])}<br>RM: ${esc(r['Nama RM'])} · BM: ${esc(r['Nama BM'])} · Spv: ${esc(r['Nama Spv'])}</p>
     <div class="mt-4 flex items-center gap-4"><div class="text-4xl font-extrabold tabular-nums ${WARNA_KAT[r['Kategori']]||''}">${esc(Number(r['Nilai Akhir']).toFixed(1))}</div>
       <div><div class="font-bold">${esc(r['Kategori'])}</div><div class="text-xs text-slate-600">${esc(r['Rekomendasi'])}</div></div></div>
+    ${blokUlang(r)}
     ${videoHtml(lv)}
     <table class="w-full text-sm mt-4"><tr class="text-left text-slate-500 text-xs border-b"><th class="py-1.5 font-semibold">Aspek</th><th class="font-semibold">Rata-rata</th><th class="font-semibold text-right">Nilai</th></tr>${rekap}</table>
     ${catatan?`<div class="mt-4 p-3 rounded-xl bg-slate-50 border"><h4 class="font-extrabold mb-1">Catatan Keseluruhan</h4><p class="text-sm whitespace-pre-line">${esc(catatan)}</p></div>`:''}
@@ -725,6 +837,7 @@ if(!API_URL) $('warn').classList.remove('hidden');
 fillMan();
 if(restore()) $('draftInfo').classList.remove('hidden');
 renderItems(); renderRekap(); renderCoaching();
+tab('riwayat');
 </script>
 </body>
 </html>
