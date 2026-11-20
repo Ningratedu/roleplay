@@ -688,7 +688,7 @@ function renderHasil(){
   $('fCariClear').classList.toggle('hidden',!q);
   const words=q.split(/\s+/).filter(Boolean);
   const hay=r=>(['Nama Sales','Nama RM','Nama BM','Nama Spv','Kategori Sales','Kategori','Tanggal Penilaian'].map(k=>k==='Tanggal Penilaian'?String(r[k]||'').slice(0,10):String(r[k]??'')).join(' ')+(ulangOf(r).ya?' perlu diulang '+ulangOf(r).alasan:'')).toLowerCase();
-  const rows=ROWS.filter(r=>(!words.length||words.every(w=>hay(r).includes(w)))&&(!fk||r['Kategori Sales']===fk)&&(!fr||r['Nama RM']===fr)&&(!fh||r['Kategori']===fh)&&(!fu||statusOf(r)===fu));
+  const rows=ROWS.filter(r=>(!words.length||words.every(w=>hay(r).includes(w)))&&(!fk||r['Kategori Sales']===fk)&&(!fr||r['Nama RM']===fr)&&(!fh||r['Kategori']===fh)&&(!fu||statusOf(r)===fu)).sort((x,y)=>(Number(y['Nilai Akhir'])||0)-(Number(x['Nilai Akhir'])||0)||String(y['Timestamp']).localeCompare(String(x['Timestamp'])));
   const avg=rows.length?rows.reduce((a,r)=>a+Number(r['Nilai Akhir']),0)/rows.length:0;
   $('stats').innerHTML=[['Penilaian',rows.length,'total data'],['Rata-rata nilai',avg.toFixed(1),'nilai akhir'],['Nilai ≥ 80',rows.filter(r=>Number(r['Nilai Akhir'])>=80).length,'Baik ke atas']]
     .map(x=>`<div class="stat-tile"><div class="stat-badge">${x[1]}</div><div class="stat-info"><div class="stat-title">${x[0]}</div><div class="stat-sub">${x[2]}</div></div></div>`).join('');
